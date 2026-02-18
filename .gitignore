@@ -65,6 +65,7 @@ test-results/
 .cursor/
 .windsurf/
 .kilocode/
+.kilocodemodes  # Kilo custom modes configuration
 
 # JetBrains IDEs
 .idea/
@@ -107,6 +108,7 @@ scripts/
 rfq-platform/
 .rules/
 .serena/
+skills/
 
 # Local server restart scripts
 restart-servers.bat

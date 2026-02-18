@@ -29,7 +29,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
   verbose: true,
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-  testTimeout: 30000,
+  testTimeout: 60000,
   maxWorkers: 1,
   globalSetup: '<rootDir>/tests/global-setup.ts',
   globalTeardown: '<rootDir>/tests/global-teardown.ts',

@@ -5,6 +5,7 @@ RFQ Buddy is a comprehensive Request for Quotation (RFQ) and tendering platform 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [AI Assistant Setup](#ai-assistant-setup)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
@@ -28,6 +29,61 @@ RFQ Buddy provides a complete tendering solution with the following key features
 - **Evaluation System**: Committee members can evaluate bids using customizable criteria
 - **Live Tendering**: Real-time bidding capabilities
 - **Document Management**: Upload and manage tender-related documents
+
+## AI Assistant Setup
+
+This project uses [**ZCode**](../zcode) for AI mode management - a multi-mode AI orchestration system for Zed Editor.
+
+### What is ZCode?
+
+ZCode enables multiple specialized AI personas (modes) with distinct roles, permissions, and behaviors. Each mode is optimized for specific tasks and can only access/modify relevant files.
+
+### Quick Start
+
+1. **Install ZCode extension** (see [ZCode README](../zcode/README.md))
+2. **Modes are defined** in `.kilocodemodes` at the project root
+3. **Use slash commands** in Zed assistant:
+   - `/modes` — List all available modes
+   - `/mode <slug>` — Switch to a specific mode
+   - `/orchestrate <task>` — Get intelligent mode suggestion
+
+### Available Modes
+
+This project includes 6 specialized AI modes:
+
+- **frontend-specialist** — React/TypeScript/CSS expert (can only edit frontend files)
+- **test-engineer** — QA and testing specialist (can only edit test files)
+- **docs-specialist** — Technical writing expert (can only edit documentation)
+- **code-skeptic** — Critical quality inspector (verifies claims with proof)
+- **code-simplifier** — Refactoring specialist (improves code without changing behavior)
+- **code-reviewer** — Senior code review persona (read-only, provides feedback)
+
+### Example Usage
+
+```
+# In Zed assistant:
+/modes
+# → Lists all 6 modes with descriptions
+
+/mode frontend-specialist
+# → Switches to frontend mode
+# → Can only edit .tsx, .jsx, .css files
+# → Focuses on React best practices and accessibility
+
+/orchestrate Write unit tests for authentication service
+# → Suggests: test-engineer mode
+# → Reasoning: Task involves testing, requires test file access
+```
+
+### Configuration
+
+See `.kilocodemodes` for full mode definitions including:
+- Role definitions and expertise areas
+- Permission groups (read/edit/command/browser/mcp)
+- File access restrictions (fileRegex)
+- Custom instructions per mode
+
+For more information, see the [ZCode documentation](../zcode/README.md).
 - **Audit Trail**: Complete audit logging for compliance
 - **Subscription Management**: Tiered subscription plans with quotas
 - **Notifications**: Email and in-app notifications for important events

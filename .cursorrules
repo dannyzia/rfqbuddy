@@ -1,0 +1,73 @@
+# ⚠️ MANDATORY: Read These Files BEFORE Any Task
+# RFQ Buddy — Zed Agent Rules
+# Auto-loaded by Zed for every agent interaction in this project.
+
+---
+
+## STEP 1 — Read These Files First (in order)
+
+Before doing ANYTHING, read these three files:
+
+1. `/rules.md` — Generic multi-agent coordination rules
+2. `/rfq-buddy-rules.md` — Project-specific rules  
+3. `/skills/README.md` — Skills system overview
+
+**Do not proceed with any task until all three are read.**
+
+---
+
+## STEP 2 — Select Skills
+
+Based on your task, apply the correct skill(s):
+
+| Task | Required Skill(s) |
+|------|-------------------|
+| New feature / multi-file change | `plan_before_code` |
+| Bug fix | `root_cause_debugging` + `surgical_execution` |
+| Backend/shared module change | `architecture_respect` + `surgical_execution` |
+| Auth, migrations, billing, bids | `high_risk_change_guard` (mandatory) |
+
+**State your selected skills explicitly before proceeding.**
+
+Skill files at: `/skills/plan_before_code.md`, `/skills/root_cause_debugging.md`, `/skills/surgical_execution.md`, `/skills/architecture_respect.md`, `/skills/high_risk_change_guard.md`
+
+---
+
+## CRITICAL PROJECT FACTS
+
+### Database spelling — non-negotiable
+```
+✅ organizations, organization_id    ← CORRECT (American spelling)
+❌ organisations, organisation_id    ← WRONG — will cause SQL errors
+```
+
+### Architecture — strict top-down only
+```
+Routes → Middleware → Controllers → Services → Database
+```
+
+### Migration numbering
+- Migrations 001–014 exist
+- **Next migration: 015**
+- Every migration MUST have matching `_rollback.sql`
+
+### Protected files (extend only, never rewrite)
+- `backend/src/services/tenderTypeSelector.service.ts`
+
+### Documentation locations
+- Phase reports → `/plans/phases/`
+- Testing reports → `/plans/testing/`
+- Analysis → `/plans/reports/`
+
+---
+
+## Verification (after every change)
+
+```powershell
+cd backend && npm run build && npm run lint && npm test
+cd frontend && npm run build && npm run check
+```
+
+---
+
+**For full rules:** `/rules.md`, `/rfq-buddy-rules.md`, `/skills/README.md`

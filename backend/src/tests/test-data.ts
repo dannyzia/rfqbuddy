@@ -184,10 +184,13 @@ export async function createMultipleTestUsers(
 
 /**
  * Clear test data (truncate all tables)
+ * OPTIMIZED: Uses batch TRUNCATE for better performance
  */
 export async function clearTestData() {
-  console.log('🧹 [DEBUG] Starting clearTestData()...');
-  const tables = [
+  const startTime = Date.now();
+  console.log(`🧹 [DEBUG] Starting clearTestData() at ${new Date().toISOString()}`);
+  
+  const allTables = [
     'audit_logs',
     'activity_logs',
     'evaluations',
@@ -216,24 +219,81 @@ export async function clearTestData() {
     'subscription_usage',
   ];
 
-  console.log(`🧹 [DEBUG] Attempting to truncate ${tables.length} tables...`);
+  console.log(`🧹 [DEBUG] Checking ${allTables.length} tables for existence...`);
 
-  for (const table of tables) {
+  // First, filter out tables that don't exist to avoid batch TRUNCATE failures
+  const existingTables: string[] = [];
+  for (const table of allTables) {
     try {
-      console.log(`🧹 [DEBUG] Truncating table: ${table}`);
-      await pool.query(`TRUNCATE TABLE ${table} CASCADE`);
-      console.log(`✅ [DEBUG] Successfully truncated: ${table}`);
-    } catch (err: any) {
-      // Table might not exist, skip
-      if (!err.message.includes('does not exist')) {
-        console.error(`❌ [DEBUG] Error truncating ${table}:`, err.message);
+      // Check if table exists by querying information_schema
+      const result = await pool.query(
+        `SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_name = $1
+        )`,
+        [table]
+      );
+      const exists = result.rows[0].exists;
+      if (exists) {
+        existingTables.push(table);
+        console.log(`✅ [DEBUG] Table exists: ${table}`);
       } else {
-        console.log(`⚠️  [DEBUG] Table does not exist (skipping): ${table}`);
+        console.log(`⚠️  [DEBUG] Table does not exist (will skip): ${table}`);
+      }
+    } catch (err: any) {
+      // If we can't check, assume it doesn't exist and skip
+      console.log(`⚠️  [DEBUG] Could not check table ${table}, assuming it doesn't exist`);
+    }
+  }
+
+  console.log(`🧹 [DEBUG] Found ${existingTables.length} existing tables out of ${allTables.length} total`);
+
+  if (existingTables.length === 0) {
+    console.log(`✅ [DEBUG] No tables to truncate, completed in ${Date.now() - startTime}ms`);
+    return;
+  }
+
+  try {
+    // Use a single transaction with batch TRUNCATE for better performance
+    // This is much faster than individual TRUNCATE statements
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      // Build a single TRUNCATE statement for all existing tables
+      // This is significantly faster than individual TRUNCATEs
+      const truncateStatement = `TRUNCATE TABLE ${existingTables.join(', ')} CASCADE`;
+      console.log(`🧹 [DEBUG] Executing batch TRUNCATE for ${existingTables.length} tables`);
+      
+      await client.query(truncateStatement);
+      console.log(`✅ [DEBUG] Batch TRUNCATE completed successfully`);
+      
+      await client.query('COMMIT');
+    } catch (err: any) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  } catch (err: any) {
+    // If batch TRUNCATE fails, fall back to individual truncation with error handling
+    console.warn(`⚠️  [DEBUG] Batch TRUNCATE failed, falling back to individual truncation:`, err.message);
+    
+    for (const table of existingTables) {
+      try {
+        await pool.query(`TRUNCATE TABLE ${table} CASCADE`);
+      } catch (tableErr: any) {
+        // Table might not exist, skip
+        if (!tableErr.message.includes('does not exist')) {
+          console.error(`❌ [DEBUG] Error truncating ${table}:`, tableErr.message);
+        }
       }
     }
   }
 
-  console.log('✅ [DEBUG] clearTestData() completed');
+  const totalElapsed = Date.now() - startTime;
+  console.log(`✅ [DEBUG] clearTestData() completed in ${totalElapsed}ms at ${new Date().toISOString()}`);
 }
 
 /**
