@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@modelcontextprotocol/server-filesystem": "^2026.1.14",
     "pg": "^8.18.0"
   }
 }

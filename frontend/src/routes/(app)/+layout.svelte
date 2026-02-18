@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { authStore, isAuthenticated, isLoading, user, isBuyer, isVendor, isAdmin } from '$lib/stores/auth';
+  import { authStore, isAuthenticated, isLoading, user, isBuyer, isVendor, isAdmin, isEvaluator } from '$lib/stores/auth';
 
   let isMobileMenuOpen = false;
   let isUserMenuOpen = false;
@@ -33,6 +33,7 @@
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/tenders', label: 'Tenders' },
     { href: '/vendors', label: 'Vendors', roles: ['buyer', 'admin'] },
+    { href: '/evaluator/dashboard', label: 'Evaluator Dashboard', roles: ['evaluator'] },
     { href: '/profile', label: 'Profile' },
   ];
 

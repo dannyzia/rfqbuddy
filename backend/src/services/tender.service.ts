@@ -40,9 +40,9 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 };
 
 const generateTenderNumber = async (buyerOrgId: string): Promise<string> => {
-  const year = new Date().getFullYear();
+  const year = new Date().getUTCFullYear();
   const { rows } = await pool.query(
-    `SELECT COUNT(*) as count FROM tenders WHERE buyer_org_id = $1 AND EXTRACT(YEAR FROM created_at) = $2`,
+    `SELECT COUNT(*) as count FROM tenders WHERE buyer_org_id = $1 AND EXTRACT(YEAR FROM created_at AT TIME ZONE 'UTC') = $2`,
     [buyerOrgId, year],
   );
   const count = parseInt(rows[0].count, 10) + 1;
@@ -95,11 +95,11 @@ export const tenderService = {
     // Step 3: Set validity days (use type default if not provided)
     const validityDays = input.validityDays || tenderTypeDef.default_validity_days;
     
-    // Step 4: Validate submission deadline
+    // Step 4: Validate submission deadline (use UTC for timezone consistency)
     const submissionDeadline = new Date(input.submissionDeadline);
     const minDaysFromNow = new Date();
-    minDaysFromNow.setDate(minDaysFromNow.getDate() + tenderTypeDef.min_submission_days);
-    
+    minDaysFromNow.setUTCDate(minDaysFromNow.getUTCDate() + tenderTypeDef.min_submission_days);
+
     if (submissionDeadline < minDaysFromNow) {
       throw Object.assign(new Error(
         `Submission deadline must be at least ${tenderTypeDef.min_submission_days} days from now for ${input.tenderType}`

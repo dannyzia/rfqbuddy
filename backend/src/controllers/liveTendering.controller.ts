@@ -4,21 +4,21 @@ import { liveTenderingDataSchema } from '../schemas/tenderMode.schema';
 import { pool } from '../config/database';
 
 // POST /live-tendering/sessions
-export async function createLiveSession(req: Request, res: Response) {
+export async function createLiveSession(req: Request, res: Response): Promise<Response | undefined> {
   try {
     const data = liveTenderingDataSchema.parse(req.body);
     const session = await liveTenderingService.createLiveSession(data);
-    res.status(201).json({ session });
+    return res.status(201).json({ session });
   } catch (error) {
     console.error('Create live session error:', error);
-    res.status(400).json({ 
-      error: error instanceof Error ? error.message : 'Failed to create live session' 
+    return res.status(400).json({
+      error: error instanceof Error ? error.message : 'Failed to create live session'
     });
   }
 }
 
 // GET /live-tendering/sessions/:tenderId
-export async function getSessionByTenderId(req: Request, res: Response) {
+export async function getSessionByTenderId(req: Request, res: Response): Promise<Response | undefined> {
   try {
     const { tenderId } = req.params;
     const session = await liveTenderingService.getSessionByTenderId(tenderId);
@@ -27,17 +27,17 @@ export async function getSessionByTenderId(req: Request, res: Response) {
       return res.status(404).json({ error: 'Live session not found' });
     }
     
-    res.json({ session });
+    return res.json({ session });
   } catch (error) {
     console.error('Get session error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch live session' 
+    return res.status(500).json({
+      error: 'Failed to fetch live session'
     });
   }
 }
 
 // GET /live-tendering/sessions/:sessionId
-export async function getSessionById(req: Request, res: Response) {
+export async function getSessionById(req: Request, res: Response): Promise<Response | undefined> {
   try {
     const { sessionId } = req.params;
     const session = await liveTenderingService.getSessionById(sessionId);
@@ -46,11 +46,11 @@ export async function getSessionById(req: Request, res: Response) {
       return res.status(404).json({ error: 'Live session not found' });
     }
     
-    res.json({ session });
+    return res.json({ session });
   } catch (error) {
     console.error('Get session error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch live session' 
+    return res.status(500).json({
+      error: 'Failed to fetch live session'
     });
   }
 }
@@ -112,7 +112,7 @@ export async function getSessionBids(req: Request, res: Response) {
 }
 
 // POST /live-tendering/bids
-export async function submitBid(req: Request, res: Response) {
+export async function submitBid(req: Request, res: Response): Promise<Response | undefined> {
   try {
     const { sessionId, amount, vendorOrgId, vendorName, notes } = req.body;
     
@@ -161,17 +161,17 @@ export async function submitBid(req: Request, res: Response) {
       totalBidsSubmitted: session.totalBidsSubmitted + 1
     });
     
-    res.status(201).json({ bidUpdate });
+    return res.status(201).json({ bidUpdate });
   } catch (error) {
     console.error('Submit bid error:', error);
-    res.status(500).json({ 
-      error: 'Failed to submit bid' 
+    return res.status(500).json({
+      error: 'Failed to submit bid'
     });
   }
 }
 
 // GET /live-tendering/sessions/:sessionId/access/:vendorOrgId
-export async function checkVendorAccess(req: Request, res: Response) {
+export async function checkVendorAccess(req: Request, res: Response): Promise<Response | undefined> {
   try {
     const { sessionId, vendorOrgId } = req.params;
     
@@ -187,20 +187,44 @@ export async function checkVendorAccess(req: Request, res: Response) {
       allowed = await checkVendorInvitation(sessionId, vendorOrgId);
     }
     
-    res.json({ allowed });
+    return res.json({ allowed });
   } catch (error) {
     console.error('Check vendor access error:', error);
-    res.status(500).json({ 
-      error: 'Failed to check vendor access' 
+    return res.status(500).json({
+      error: 'Failed to check vendor access'
     });
   }
 }
 
 // SSE Stream endpoint
 export async function streamSessionUpdates(req: Request, res: Response) {
+  let redisSubscriber: any = null;
+  let heartbeat: NodeJS.Timeout | null = null;
+  const { sessionId } = req.params;
+  const channel = `live_session:${sessionId}`;
+  
+  // Define cleanup function
+  const cleanup = async () => {
+    try {
+      if (heartbeat) {
+        clearInterval(heartbeat);
+        heartbeat = null;
+      }
+      
+      if (redisSubscriber) {
+        await redisSubscriber.unsubscribe(channel);
+        await redisSubscriber.quit();
+        redisSubscriber = null;
+        console.log(`Redis client disconnected from session ${sessionId}`);
+      }
+      
+      console.log(`Client disconnected from session ${sessionId}`);
+    } catch (err) {
+      console.error('Error during cleanup:', err);
+    }
+  };
+  
   try {
-    const { sessionId } = req.params;
-    
     // Set SSE headers
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -218,28 +242,15 @@ export async function streamSessionUpdates(req: Request, res: Response) {
       timestamp: new Date().toISOString()
     })}\n\n`);
     
-    // Set up Redis subscription
+    // Set up Redis subscription with a dedicated client
     const { redisClient } = await import('../config/redis');
-    const channel = `live_session:${sessionId}`;
     
-    const messageHandler = (message: string) => {
-      try {
-        const data = JSON.parse(message);
-        res.write(`data: ${JSON.stringify(data)}\n\n`);
-      } catch (err) {
-        console.error('SSE message parse error:', err);
-      }
-    };
+    // Create a dedicated Redis client for this SSE connection
+    redisSubscriber = redisClient.duplicate();
+    await redisSubscriber.connect();
     
-    // Subscribe to Redis channel
-    redisClient.subscribe(channel).then(() => {
-      console.log(`Subscribed to channel: ${channel}`);
-    }).catch(err => {
-      console.error('Redis subscribe error:', err);
-    });
-    
-    // Handle incoming messages
-    redisClient.on('message', (receivedChannel, message) => {
+    // Define message handler as named function for proper cleanup
+    const messageHandler = (receivedChannel: string, message: string) => {
       if (receivedChannel === channel) {
         try {
           const data = JSON.parse(message);
@@ -248,31 +259,38 @@ export async function streamSessionUpdates(req: Request, res: Response) {
           console.error('SSE message parse error:', err);
         }
       }
-    });
+    };
     
-    // Handle client disconnect
-    req.on('close', () => {
-      redisClient.unsubscribe(channel);
-      redisClient.off('message', messageHandler);
-      console.log(`Client disconnected from session ${sessionId}`);
-    });
+    // Subscribe to Redis channel
+    await redisSubscriber.subscribe(channel);
+    console.log(`Subscribed to channel: ${channel}`);
+    
+    // Handle incoming messages
+    redisSubscriber.on('message', messageHandler);
+    
+    // Handle client disconnect - single handler for all cleanup
+    req.on('close', cleanup);
+    req.on('error', cleanup);
     
     // Send heartbeat every 30 seconds
-    const heartbeat = setInterval(() => {
-      res.write(`data: ${JSON.stringify({
-        type: 'heartbeat',
-        timestamp: new Date().toISOString()
-      })}\n\n`);
+    heartbeat = setInterval(() => {
+      try {
+        res.write(`data: ${JSON.stringify({
+          type: 'heartbeat',
+          timestamp: new Date().toISOString()
+        })}\n\n`);
+      } catch (err) {
+        console.error('Heartbeat send error:', err);
+        cleanup();
+      }
     }, 30000);
-    
-    // Clean up on disconnect
-    req.on('close', () => {
-      clearInterval(heartbeat);
-    });
     
   } catch (error) {
     console.error('SSE stream error:', error);
-    res.status(500).json({ error: 'Failed to establish stream' });
+    await cleanup();
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to establish stream' });
+    }
   }
 }
 

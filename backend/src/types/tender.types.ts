@@ -33,6 +33,22 @@ export enum EvaluationMethod {
   Technical = 'technical',
 }
 
+export interface TenderTypeDefinition {
+  id: string;
+  code: string;
+  name: string;
+  method: 'rfq' | 'open' | 'limited' | 'direct' | 'turnkey';
+  is_govt_type: boolean;
+  is_direct_procurement: boolean;
+  form_segment_config: {
+    segments: string[];
+    conditional?: Record<string, string>;
+  };
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface SimpleRfqData {
   buyerInfo: {
     name: string;

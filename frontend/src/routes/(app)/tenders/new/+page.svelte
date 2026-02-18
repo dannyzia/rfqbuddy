@@ -423,6 +423,11 @@
 
           <div>
             <label for="estimatedCost" class="chaingpt-label required">Estimated Cost (BDT)</label>
+            {#if $valueRangesLoading && formData.procurementType}
+              <p class="chaingpt-text" style="color: var(--info); margin-bottom: 0.5rem; font-weight: 500;" data-testid="loading-indicator">
+                ⏳ Loading value ranges...
+              </p>
+            {/if}
             <select
               id="estimatedCost"
               bind:value={formData.estimatedCost}

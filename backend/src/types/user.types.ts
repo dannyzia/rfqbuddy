@@ -4,13 +4,20 @@
 
 import { OrganizationType } from './organization.types';
 
+export type UserRole =
+  | 'admin'
+  | 'buyer'
+  | 'vendor'
+  | 'evaluator'
+  | 'purchase_head';
+
 export interface UserRow {
   id: string;
   organization_id: string;
   name: string;
   email: string;
   password_hash: string;
-  roles: string[];
+  roles: UserRole[];
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -23,7 +30,7 @@ export interface UserContext {
   orgId: string;
   organizationName: string;
   organizationType: OrganizationType;  // NEW
-  roles: string[];
+  roles: UserRole[];
 }
 
 export interface UserWithOrg extends UserRow {
@@ -31,10 +38,12 @@ export interface UserWithOrg extends UserRow {
   organization_type?: OrganizationType;
 }
 
+export type TokenType = 'access' | 'refresh' | 'reset_password' | 'email_verification';
+
 export interface TokenRow {
   id: string;
   user_id: string;
-  token_type: string;
+  token_type: TokenType;
   expires_at: string;
   created_at: string;
 }

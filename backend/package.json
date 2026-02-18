@@ -13,7 +13,9 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "clear-rate-limits": "ts-node scripts/clear-rate-limits.ts"
+    "clear-rate-limits": "ts-node scripts/clear-rate-limits.ts",
+    "seed:test": "ts-node scripts/seed-test-data.ts",
+    "seed:minimal": "ts-node scripts/seed-minimal-test-data.ts"
   },
   "keywords": [
     "rfq",

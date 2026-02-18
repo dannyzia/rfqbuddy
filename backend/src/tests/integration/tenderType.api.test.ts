@@ -101,7 +101,7 @@ describe('Tender Type APIs - Integration Tests', () => {
   });
 
   describe('POST /api/tender-types/suggest', () => {
-    it.skip('should suggest PG1 for small goods purchase', async () => {
+    it('should suggest PG1 for small goods purchase', async () => {
       const response = await request(app)
         .post('/api/tender-types/suggest')
         .set('Authorization', `Bearer ${authToken}`)
@@ -117,7 +117,7 @@ describe('Tender Type APIs - Integration Tests', () => {
       expect(response.body.recommended.confidence).toBe(100);
     });
 
-    it.skip('should suggest PG2 for medium goods purchase', async () => {
+    it('should suggest PG2 for medium goods purchase', async () => {
       const response = await request(app)
         .post('/api/tender-types/suggest')
         .set('Authorization', `Bearer ${authToken}`)
@@ -132,7 +132,7 @@ describe('Tender Type APIs - Integration Tests', () => {
       expect(response.body.recommended.code).toBe('PG2');
     });
 
-    it.skip('should validate input schema', async () => {
+    it('should validate input schema', async () => {
       const response = await request(app)
         .post('/api/tender-types/suggest')
         .set('Authorization', `Bearer ${authToken}`)
@@ -157,7 +157,7 @@ describe('Tender Type APIs - Integration Tests', () => {
   });
 
   describe('POST /api/tender-types/validate-value', () => {
-    it.skip('should validate correct PG1 value', async () => {
+    it('should validate correct PG1 value', async () => {
       const response = await request(app)
         .post('/api/tender-types/validate-value')
         .set('Authorization', `Bearer ${authToken}`)
@@ -170,7 +170,7 @@ describe('Tender Type APIs - Integration Tests', () => {
       expect(response.body.data.valid).toBe(true);
     });
 
-    it.skip('should reject invalid PG1 value', async () => {
+    it('should reject invalid PG1 value', async () => {
       const response = await request(app)
         .post('/api/tender-types/validate-value')
         .set('Authorization', `Bearer ${authToken}`)
@@ -184,7 +184,7 @@ describe('Tender Type APIs - Integration Tests', () => {
       expect(response.body.data.suggestedType).toBeDefined();
     });
 
-    it.skip('should validate PG2 value range', async () => {
+    it('should validate PG2 value range', async () => {
       const response = await request(app)
         .post('/api/tender-types/validate-value')
         .set('Authorization', `Bearer ${authToken}`)
@@ -209,7 +209,7 @@ describe('Tender Type APIs - Integration Tests', () => {
   });
 
   describe('POST /api/tender-types/calculate-securities', () => {
-    it.skip('should calculate securities for PG1', async () => {
+    it('should calculate securities for PG1', async () => {
       const response = await request(app)
         .post('/api/tender-types/calculate-securities')
         .set('Authorization', `Bearer ${authToken}`)
@@ -224,7 +224,7 @@ describe('Tender Type APIs - Integration Tests', () => {
       expect(response.body.data.tenderSecurity).toBe(0); // PG1 has no security
     });
 
-    it.skip('should calculate securities for PG2', async () => {
+    it('should calculate securities for PG2', async () => {
       const response = await request(app)
         .post('/api/tender-types/calculate-securities')
         .set('Authorization', `Bearer ${authToken}`)
@@ -239,7 +239,7 @@ describe('Tender Type APIs - Integration Tests', () => {
       expect(response.body.data.performanceSecurity).toBe(250000); // 5% of 5M
     });
 
-    it.skip('should validate tender value', async () => {
+    it('should validate tender value', async () => {
       const response = await request(app)
         .post('/api/tender-types/calculate-securities')
         .set('Authorization', `Bearer ${authToken}`)
@@ -264,7 +264,7 @@ describe('Tender Type APIs - Integration Tests', () => {
   });
 
   describe('GET /api/tender-types/:code/documents', () => {
-    it.skip('should return PG1 document requirements', async () => {
+    it('should return PG1 document requirements', async () => {
       const response = await request(app)
         .get('/api/tender-types/PG1/documents')
         .set('Authorization', `Bearer ${authToken}`)
@@ -275,7 +275,7 @@ describe('Tender Type APIs - Integration Tests', () => {
       expect(Array.isArray(response.body.data) || typeof response.body.data === 'object').toBe(true);
     });
 
-    it.skip('should return PG2 document requirements', async () => {
+    it('should return PG2 document requirements', async () => {
       const response = await request(app)
         .get('/api/tender-types/PG2/documents')
         .set('Authorization', `Bearer ${authToken}`)
@@ -285,7 +285,7 @@ describe('Tender Type APIs - Integration Tests', () => {
       expect(response.body.data).toBeDefined();
     });
 
-    it.skip('should handle invalid tender type code', async () => {
+    it('should handle invalid tender type code', async () => {
       const response = await request(app)
         .get('/api/tender-types/INVALID/documents')
         .set('Authorization', `Bearer ${authToken}`)
@@ -302,7 +302,7 @@ describe('Tender Type APIs - Integration Tests', () => {
   });
 
   describe('Testing with multiple tender types', () => {
-    it.skip('should handle works procurement type', async () => {
+    it('should handle works procurement type', async () => {
       const response = await request(app)
         .get('/api/tender-types?procurementType=works')
         .set('Authorization', `Bearer ${authToken}`)
@@ -316,7 +316,7 @@ describe('Tender Type APIs - Integration Tests', () => {
       }
     });
 
-    it.skip('should handle services procurement type', async () => {
+    it('should handle services procurement type', async () => {
       const response = await request(app)
         .get('/api/tender-types?procurementType=services')
         .set('Authorization', `Bearer ${authToken}`)

@@ -16,7 +16,7 @@ INSERT INTO tender_type_definitions (
     requires_tender_security, requires_performance_security,
     requires_two_envelope, requires_newspaper_ad,
     min_submission_days, max_submission_days, default_validity_days,
-    section_count, is_international
+    section_count, is_international, method
 ) VALUES (
     'PG1',
     'Request for Quotation - Goods (up to BDT 8 Lac)',
@@ -26,7 +26,8 @@ INSERT INTO tender_type_definitions (
     FALSE, FALSE,
     FALSE, FALSE,
     3, 7, 30,
-    4, FALSE
+    4, FALSE,
+    'rfq'
 ) ON CONFLICT DO NOTHING;
 
 -- PG2: Open/Limited Tendering for Goods (8 Lac - 50 Lac)
@@ -37,7 +38,7 @@ INSERT INTO tender_type_definitions (
     requires_performance_security, performance_security_percent,
     requires_two_envelope, requires_newspaper_ad,
     min_submission_days, max_submission_days, default_validity_days,
-    section_count, is_international
+    section_count, is_international, method
 ) VALUES (
     'PG2',
     'Open/Limited Tendering - Goods (BDT 8 Lac to 50 Lac)',
@@ -48,7 +49,8 @@ INSERT INTO tender_type_definitions (
     TRUE, 5.00,
     FALSE, TRUE,
     15, 30, 90,
-    8, FALSE
+    8, FALSE,
+    'open'
 ) ON CONFLICT DO NOTHING;
 
 -- PG3: Open Tendering for Goods (above 50 Lac, National)
@@ -59,7 +61,7 @@ INSERT INTO tender_type_definitions (
     requires_performance_security, performance_security_percent,
     requires_two_envelope, requires_newspaper_ad,
     min_submission_days, max_submission_days, default_validity_days,
-    section_count, is_international
+    section_count, is_international, method
 ) VALUES (
     'PG3',
     'Open Tendering - Goods (above BDT 50 Lac, National)',
@@ -70,7 +72,8 @@ INSERT INTO tender_type_definitions (
     TRUE, 10.00,
     FALSE, TRUE,
     30, 45, 90,
-    8, FALSE
+    8, FALSE,
+    'open'
 ) ON CONFLICT DO NOTHING;
 
 -- PG4: Open Tendering - International (any value)
@@ -81,7 +84,7 @@ INSERT INTO tender_type_definitions (
     requires_performance_security, performance_security_percent,
     requires_two_envelope, requires_newspaper_ad,
     min_submission_days, max_submission_days, default_validity_days,
-    section_count, is_international
+    section_count, is_international, method
 ) VALUES (
     'PG4',
     'Open Tendering - Goods (International)',
@@ -92,7 +95,8 @@ INSERT INTO tender_type_definitions (
     TRUE, 10.00,
     FALSE, TRUE,
     30, 60, 120,
-    8, TRUE
+    8, TRUE,
+    'open'
 ) ON CONFLICT DO NOTHING;
 
 -- PG5A: Turnkey Contract for Plant & Equipment
@@ -103,7 +107,7 @@ INSERT INTO tender_type_definitions (
     requires_performance_security, performance_security_percent,
     requires_two_envelope, requires_newspaper_ad, requires_prequalification,
     min_submission_days, max_submission_days, default_validity_days,
-    section_count, is_international
+    section_count, is_international, method
 ) VALUES (
     'PG5A',
     'Turnkey Contract - Plant & Equipment (One Stage Two Envelope)',
@@ -115,7 +119,8 @@ INSERT INTO tender_type_definitions (
     TRUE, TRUE,
     TRUE,
     30, 60, 120,
-    8, TRUE
+    8, TRUE,
+    'turnkey'
 ) ON CONFLICT DO NOTHING;
 
 -- PG9A: Direct Procurement (Emergency/Single Source)
@@ -125,7 +130,7 @@ INSERT INTO tender_type_definitions (
     requires_tender_security, requires_performance_security,
     requires_two_envelope, requires_newspaper_ad,
     min_submission_days, default_validity_days,
-    section_count, is_direct_procurement
+    section_count, is_direct_procurement, method
 ) VALUES (
     'PG9A',
     'Direct Procurement - Goods (Emergency or Single Source)',
@@ -135,7 +140,8 @@ INSERT INTO tender_type_definitions (
     FALSE, FALSE,
     FALSE, FALSE,
     1, 7,
-    4, TRUE
+    4, TRUE,
+    'direct'
 ) ON CONFLICT DO NOTHING;
 
 -- ============================================================================
@@ -149,7 +155,7 @@ INSERT INTO tender_type_definitions (
     requires_tender_security, requires_performance_security,
     requires_two_envelope, requires_newspaper_ad,
     min_submission_days, max_submission_days, default_validity_days,
-    section_count, is_international
+    section_count, is_international, method
 ) VALUES (
     'PW1',
     'Request for Quotation - Works (up to BDT 15 Lac)',
@@ -159,7 +165,8 @@ INSERT INTO tender_type_definitions (
     FALSE, FALSE,
     FALSE, FALSE,
     7, 14, 30,
-    4, FALSE
+    4, FALSE,
+    'rfq'
 ) ON CONFLICT DO NOTHING;
 
 -- PW3: Open Tendering for Works (above 5 Crore)
@@ -171,7 +178,7 @@ INSERT INTO tender_type_definitions (
     requires_retention_money, retention_money_percent,
     requires_two_envelope, requires_newspaper_ad, requires_prequalification, requires_site_visit,
     min_submission_days, max_submission_days, default_validity_days,
-    section_count, is_international
+    section_count, is_international, method
 ) VALUES (
     'PW3',
     'Open Tendering - Works (above BDT 5 Crore)',
@@ -184,7 +191,8 @@ INSERT INTO tender_type_definitions (
     TRUE, TRUE,
     TRUE, TRUE,
     45, 60, 120,
-    10, FALSE
+    10, FALSE,
+    'open'
 ) ON CONFLICT DO NOTHING;
 
 -- ============================================================================
@@ -198,7 +206,7 @@ INSERT INTO tender_type_definitions (
     requires_tender_security, requires_performance_security,
     requires_two_envelope, requires_newspaper_ad,
     min_submission_days, max_submission_days, default_validity_days,
-    section_count, is_international
+    section_count, is_international, method
 ) VALUES (
     'PPS2',
     'Outsourcing of Personnel (Guards, Drivers, Cleaners, etc.)',
@@ -208,7 +216,8 @@ INSERT INTO tender_type_definitions (
     FALSE, FALSE,
     FALSE, FALSE,
     14, 30, 90,
-    7, FALSE
+    7, FALSE,
+    'open'
 ) ON CONFLICT DO NOTHING;
 
 -- PPS3: Least Cost Selection (Standard Services)
@@ -218,7 +227,7 @@ INSERT INTO tender_type_definitions (
     requires_tender_security, requires_performance_security,
     requires_two_envelope, requires_newspaper_ad,
     min_submission_days, max_submission_days, default_validity_days,
-    section_count, is_international
+    section_count, is_international, method
 ) VALUES (
     'PPS3',
     'Least Cost Selection - Services (Consulting, Training, etc.)',
@@ -228,7 +237,8 @@ INSERT INTO tender_type_definitions (
     FALSE, FALSE,
     FALSE, FALSE,
     14, 30, 90,
-    7, FALSE
+    7, FALSE,
+    'open'
 ) ON CONFLICT DO NOTHING;
 
 -- PPS6: Direct Procurement - Services (Emergency/Single Source)
@@ -238,7 +248,7 @@ INSERT INTO tender_type_definitions (
     requires_tender_security, requires_performance_security,
     requires_two_envelope, requires_newspaper_ad,
     min_submission_days, default_validity_days,
-    section_count, is_direct_procurement
+    section_count, is_direct_procurement, method
 ) VALUES (
     'PPS6',
     'Direct Procurement - Services (Emergency or Single Source)',
@@ -248,7 +258,8 @@ INSERT INTO tender_type_definitions (
     FALSE, FALSE,
     FALSE, FALSE,
     1, 7,
-    4, TRUE
+    4, TRUE,
+    'direct'
 ) ON CONFLICT DO NOTHING;
 
 COMMIT;

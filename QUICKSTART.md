@@ -1,379 +1,570 @@
-# 🚀 Quick Start Guide
+# RFQ Buddy - Quick Start Guide
 
-Get the RFQ Tendering Platform up and running in 10 minutes!
+Get RFQ Buddy up and running in minutes with this quick start guide.
 
-## 📌 Important: Using Neon & Upstash?
+## Table of Contents
 
-**If you're using Neon PostgreSQL and Upstash Redis (cloud-based services), follow this guide instead:**
+- [Prerequisites](#prerequisites)
+- [One-Line Setup](#one-line-setup)
+- [Manual Setup](#manual-setup)
+- [Environment Setup](#environment-setup)
+- [Database Setup](#database-setup)
+- [Starting Services](#starting-services)
+- [Verification](#verification)
+- [Troubleshooting](#troubleshooting)
+- [Next Steps](#next-steps)
 
-👉 **[NEON_UPSTASH_SETUP.md](NEON_UPSTASH_SETUP.md)** - Complete setup guide for cloud services
+## Prerequisites
 
-This QUICKSTART guide is for **local PostgreSQL and Redis installation**. If you're using cloud services, the Neon/Upstash guide will be much easier!
+Before you begin, ensure you have the following installed:
 
----
+- **Node.js**: v18 or higher ([Download](https://nodejs.org/))
+- **Docker** and **Docker Compose**: v20 or higher ([Download](https://docs.docker.com/get-docker/))
+- **Git**: For cloning the repository ([Download](https://git-scm.com/downloads))
 
-## Prerequisites Check (Local Installation)
-
-Ensure you have these installed:
+### Verify Installations
 
 ```bash
-node --version    # Should be v20.x or higher
-psql --version    # Should be v16 or higher
-redis-cli --version  # Should be v7 or higher
+node --version    # Should be v18 or higher
+docker --version  # Should be v20 or higher
+docker compose version
+git --version
 ```
 
-If any are missing, see the [Prerequisites](README.md#prerequisites) section in the main README.
+## One-Line Setup
 
-**OR** skip local installation and use cloud services - see [NEON_UPSTASH_SETUP.md](NEON_UPSTASH_SETUP.md)
-
-## Step-by-Step Setup
-
-### 1. Install Dependencies
+The fastest way to get RFQ Buddy running is using Docker Compose:
 
 ```bash
-# Install backend dependencies
+git clone <repository-url> && cd RFQ_Buddy && docker compose up -d
+```
+
+This command will:
+1. Clone the repository
+2. Navigate to the project directory
+3. Start all services (PostgreSQL, Redis, MinIO, Backend, Frontend)
+
+After the command completes, wait about 30 seconds for all services to initialize, then visit:
+
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:3000/api
+- **MinIO Console**: http://localhost:9001 (username: `minioadmin`, password: `minioadmin`)
+
+## Manual Setup
+
+If you prefer to run services manually or need more control, follow these steps:
+
+### Step 1: Clone the Repository
+
+```bash
+git clone <repository-url>
+cd RFQ_Buddy
+```
+
+### Step 2: Install Dependencies
+
+Install backend dependencies:
+
+```bash
 cd backend
 npm install
+```
 
-# Install frontend dependencies
+Install frontend dependencies:
+
+```bash
 cd ../frontend
 npm install
 ```
 
-### 2. Setup PostgreSQL Database
+### Step 3: Start Infrastructure Services
 
-**Option A: Using Neon (Recommended - No local install needed)**
-- See [NEON_UPSTASH_SETUP.md](NEON_UPSTASH_SETUP.md) for complete instructions
-
-**Option B: Local PostgreSQL**
+Start PostgreSQL and Redis using Docker:
 
 ```bash
-# Create the database
-psql -U postgres -c "CREATE DATABASE rfq_platform;"
-
-# Import the schema (from project root)
-psql -U postgres -d rfq_platform -f ../Instructions/rfq_tendering_platform_schema_v3.sql
-
-# Verify tables were created
-psql -U postgres -d rfq_platform -c "\dt"
+cd ..
+docker compose up -d postgres redis minio
 ```
 
-**Windows Users**: You may need to use the full path to psql if it's not in your PATH.
-
-### 3. Generate JWT Secrets
-
-Run these commands and save the output:
+Or run them individually:
 
 ```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# PostgreSQL
+docker run -d --name rfq-postgres \
+  -e POSTGRES_DB=rfq_platform \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -p 5432:5432 \
+  postgres:16-alpine
+
+# Redis
+docker run -d --name rfq-redis \
+  -p 6379:6379 \
+  redis:7-alpine
+
+# MinIO (for file storage)
+docker run -d --name rfq-minio \
+  -e MINIO_ROOT_USER=minioadmin \
+  -e MINIO_ROOT_PASSWORD=minioadmin \
+  -p 9000:9000 -p 9001:9001 \
+  minio/minio server /data --console-address ":9001"
 ```
 
-### 4. Configure Environment Variables
+### Step 4: Set Up Environment Variables
 
-**Backend:**
+See [Environment Setup](#environment-setup) below.
+
+### Step 5: Initialize the Database
+
+See [Database Setup](#database-setup) below.
+
+### Step 6: Start the Application
+
+See [Starting Services](#starting-services) below.
+
+## Environment Setup
+
+### Backend Environment Variables
+
+Copy the example environment file and customize it:
 
 ```bash
 cd backend
-cp env.example .env
+cp .env.example .env
 ```
 
-Edit `backend/.env` and set these REQUIRED values:
+Edit `.env` with your preferred settings. For local development, the defaults should work:
 
-**For Neon PostgreSQL + Upstash Redis:**
 ```env
-# Neon PostgreSQL
-DATABASE_URL=postgresql://user:password@host.neon.tech/database?sslmode=require
+# Server Configuration
+PORT=3000
+NODE_ENV=development
 
-# Upstash Redis
-REDIS_URL=rediss://default:password@host.upstash.io:6379
-
-# JWT Secrets (paste the values generated in step 3)
-JWT_SECRET=paste_first_generated_secret_here
-JWT_REFRESH_SECRET=paste_second_generated_secret_here
-```
-
-**For Local PostgreSQL + Redis:**
-```env
-# Database (update if your postgres password is different)
-DB_PASSWORD=postgres
-
-# JWT Secrets (paste the values generated in step 3)
-JWT_SECRET=paste_first_generated_secret_here
-JWT_REFRESH_SECRET=paste_second_generated_secret_here
-
-# Optional: Update these if using different credentials
-DB_USER=postgres
+# Database Configuration
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/rfq_platform
+DB_HOST=localhost
+DB_PORT=5432
 DB_NAME=rfq_platform
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_SSL=false
+
+# Redis Configuration
+REDIS_URL=redis://localhost:6379
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# JWT Configuration
+JWT_SECRET=dev_jwt_secret_key_minimum_32_characters_long
+JWT_REFRESH_SECRET=dev_refresh_secret_key_minimum_32_characters_long
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# CORS Configuration
+CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+
+# Frontend URL
+FRONTEND_URL=http://localhost:5173
+
+# S3/MinIO Configuration
+S3_ENDPOINT=http://localhost:9000
+S3_ACCESS_KEY=minioadmin
+S3_SECRET_KEY=minioadmin
+S3_BUCKET=rfq-documents
+S3_REGION=us-east-1
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# Logging
+LOG_LEVEL=debug
 ```
 
-**Frontend:**
+### Frontend Environment Variables
+
+Copy the example environment file:
 
 ```bash
 cd ../frontend
+cp .env.example .env
 ```
 
-Create `frontend/.env`:
+Edit `.env` with your backend URL:
 
 ```env
-PUBLIC_API_URL=http://localhost:3000/api
-PUBLIC_APP_NAME=RFQ Tendering Platform
-PUBLIC_APP_URL=http://localhost:5173
+VITE_API_URL=http://localhost:3000/api
 ```
 
-### 5. Start Redis
+### Validate Environment Variables
 
-**Option A: Using Upstash (Recommended - No local install needed)**
-- See [NEON_UPSTASH_SETUP.md](NEON_UPSTASH_SETUP.md) for setup
-- No need to start anything - it's always running in the cloud!
+The backend includes a validation script to check your environment:
 
-**Option B: Local Redis**
-
-**Windows:**
 ```bash
-# If using Redis downloaded from GitHub releases
-redis-server
-
-# Or if using WSL
-wsl redis-server
+cd backend
+node validate-env.js
 ```
 
-**macOS:**
+This will report any missing or invalid environment variables.
+
+## Database Setup
+
+### Running Migrations
+
+Initialize the database schema:
+
 ```bash
-redis-server
-# Or if installed via Homebrew:
-brew services start redis
+cd backend
+node run-migrations.js
 ```
 
-**Linux:**
+You should see output indicating successful migration:
+
+```
+✅ Database connected successfully
+✅ Migration completed successfully
+```
+
+### Seeding Test Data (Optional)
+
+Populate the database with test data for development:
+
 ```bash
-sudo systemctl start redis
-# Or
-redis-server
+npm run seed:minimal
 ```
 
-**Verify Redis is running:**
+Or for more comprehensive test data:
+
 ```bash
-redis-cli ping
-# Should output: PONG
+npm run seed:test
 ```
 
-### 6. Start the Backend
+### Verify Database Connection
+
+Test your database connection:
+
+```bash
+node test-db.js
+```
+
+## Starting Services
+
+### Option 1: Using Provided Scripts
+
+**Windows (PowerShell)**:
+
+```bash
+.\start-backend.ps1
+```
+
+**Windows (Batch)**:
+
+```bash
+.\start-backend.bat
+```
+
+### Option 2: Manual Start
+
+**Start Backend**:
 
 ```bash
 cd backend
 npm run dev
 ```
 
-You should see:
+The backend will start on `http://localhost:3000`
+
+**Start Frontend** (in a new terminal):
+
+```bash
+cd frontend
+npm run dev
 ```
-✅ Database connected successfully (Neon PostgreSQL)
-✅ Redis connected successfully (Upstash)
-✅ Redis is ready to accept commands
-Server running on port 3000
-Health check: http://localhost:3000/health
+
+The frontend will start on `http://localhost:5173`
+
+### Option 3: Using Docker Compose
+
+Start all services including backend and frontend:
+
+```bash
+docker compose up -d
 ```
 
-**Note:** If using local PostgreSQL/Redis, the messages will say "Database connected successfully" without "(Neon PostgreSQL)" or "(Upstash)".
+View logs:
 
-**Test the backend:**
+```bash
+docker compose logs -f
+```
 
-Open http://localhost:3000/health in your browser. You should see:
+Stop all services:
+
+```bash
+docker compose down
+```
+
+## Verification
+
+### Check Backend Health
+
+```bash
+curl http://localhost:3000/health
+```
+
+Expected response:
 
 ```json
 {
   "status": "ok",
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "uptime": 5.123,
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "uptime": 123.456,
   "environment": "development"
 }
 ```
 
-### 7. Start the Frontend
+### Check Frontend
 
-In a **new terminal**:
+Open your browser and navigate to:
+
+```
+http://localhost:5173
+```
+
+You should see the RFQ Buddy application landing page.
+
+### Test API Endpoint
 
 ```bash
-cd frontend
-npm run dev
+curl http://localhost:3000/api
 ```
 
-You should see:
+Expected response:
+
+```json
+{
+  "message": "RFQ Tendering Platform API",
+  "version": "1.0.0",
+  "documentation": "/api/docs"
+}
 ```
-VITE v5.x.x  ready in xxx ms
 
-  ➜  Local:   http://localhost:5173/
-  ➜  Network: use --host to expose
-```
+### Test Database Connection
 
-**Open the app:**
-
-Visit http://localhost:5173 in your browser.
-
-## ✅ Verify Everything Works
-
-### Backend Health Check
-- URL: http://localhost:3000/health
-- Expected: `{"status": "ok", ...}`
-
-### Backend API Info
-- URL: http://localhost:3000/api
-- Expected: `{"message": "RFQ Tendering Platform API", ...}`
-
-### Frontend
-- URL: http://localhost:5173
-- Expected: The frontend app loads (will be populated in Phase 7)
-
-### Database Connection
-```bash
-psql -U postgres -d rfq_platform -c "SELECT COUNT(*) FROM users;"
-```
-Expected: Returns a count (0 initially)
-
-### Redis Connection
-```bash
-redis-cli ping
-```
-Expected: `PONG`
-
-## 🎯 You're Ready!
-
-The platform is now running:
-- **Backend API**: http://localhost:3000
-- **Frontend App**: http://localhost:5173
-- **Database**: PostgreSQL on port 5432
-- **Cache**: Redis on port 6379
-
-## 🔄 Daily Development Workflow
-
-### Starting the Platform
-
-**Terminal 1 - Backend:**
 ```bash
 cd backend
-npm run dev
+node test-db.js
 ```
 
-**Terminal 2 - Frontend:**
+### Test Redis Connection
+
 ```bash
+node -e "const redis = require('ioredis'); const client = new redis(); client.ping().then(() => { console.log('✅ Redis connected'); client.quit(); }).catch(err => console.error('❌ Redis connection failed:', err));"
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### Issue: Port Already in Use
+
+**Error**: `Error: listen EADDRINUSE: address already in use :::3000`
+
+**Solution**: Change the port in your `.env` file or stop the conflicting process:
+
+```bash
+# Find process using port 3000 (Linux/Mac)
+lsof -ti:3000 | xargs kill -9
+
+# Find process using port 3000 (Windows)
+netstat -ano | findstr :3000
+taskkill /PID <PID> /F
+```
+
+#### Issue: Database Connection Failed
+
+**Error**: `Connection refused` or `password authentication failed`
+
+**Solution**:
+1. Ensure PostgreSQL is running: `docker ps | grep postgres`
+2. Check your `.env` database credentials match the Docker container
+3. Verify the database port: `docker ps | grep postgres` (should show `0.0.0.0:5432->5432/tcp`)
+
+#### Issue: Redis Connection Failed
+
+**Error**: `Redis connection to localhost:6379 failed`
+
+**Solution**:
+1. Ensure Redis is running: `docker ps | grep redis`
+2. Check the Redis port: `docker ps | grep redis` (should show `0.0.0.0:6379->6379/tcp`)
+3. Test connection: `redis-cli ping` (should return `PONG`)
+
+#### Issue: Migration Fails
+
+**Error**: `relation already exists` or `database does not exist`
+
+**Solution**:
+1. Drop and recreate the database:
+```bash
+docker exec -it rfq-postgres psql -U postgres -c "DROP DATABASE IF EXISTS rfq_platform;"
+docker exec -it rfq-postgres psql -U postgres -c "CREATE DATABASE rfq_platform;"
+```
+2. Run migrations again: `node run-migrations.js`
+
+#### Issue: Frontend Cannot Connect to Backend
+
+**Error**: `Network error` or `CORS error` in browser console
+
+**Solution**:
+1. Ensure backend is running: `curl http://localhost:3000/health`
+2. Check `VITE_API_URL` in frontend `.env` matches backend URL
+3. Verify `CORS_ORIGINS` in backend `.env` includes frontend URL
+
+#### Issue: File Upload Fails
+
+**Error**: `S3 connection failed` or `Bucket not found`
+
+**Solution**:
+1. Ensure MinIO is running: `docker ps | grep minio`
+2. Create the bucket manually:
+```bash
+# Install MinIO client
+wget https://dl.min.io/client/mc/release/linux-amd64/mc
+chmod +x mc
+./mc alias set local http://localhost:9000 minioadmin minioadmin
+./mc mb local/rfq-documents
+```
+
+#### Issue: Tests Fail
+
+**Error**: Test suite errors or timeouts
+
+**Solution**:
+1. Ensure all services are running: `docker compose ps`
+2. Check test environment variables: `cat .env.test`
+3. Run tests with verbose output: `npm test -- --verbose`
+
+### Getting Help
+
+If you encounter issues not covered here:
+
+1. Check the logs: `docker compose logs -f <service-name>`
+2. Review the full [README.md](README.md) for detailed documentation
+3. Check the backend logs in `backend/logs/` directory
+4. Enable debug logging by setting `LOG_LEVEL=debug` in your `.env`
+
+## Next Steps
+
+Now that RFQ Buddy is running, here's what you can do next:
+
+### Create Your First User
+
+Register a new user through the frontend or via API:
+
+```bash
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "SecurePassword123!",
+    "firstName": "John",
+    "lastName": "Doe",
+    "organizationName": "Test Organization",
+    "organizationType": "buyer"
+  }'
+```
+
+### Explore the API
+
+Try out different API endpoints:
+
+```bash
+# Get all tenders
+curl http://localhost:3000/api/tenders
+
+# Get subscription plans
+curl http://localhost:3000/api/subscriptions
+
+# Get tender types
+curl http://localhost:3000/api/tender-types
+```
+
+### Run Tests
+
+Run the test suite to verify everything works:
+
+```bash
+# Backend tests
+cd backend
+npm test
+
+# Frontend tests
+cd ../frontend
+npm test
+```
+
+### Development
+
+Start development with hot-reload:
+
+```bash
+# Backend (in one terminal)
+cd backend
+npm run dev
+
+# Frontend (in another terminal)
 cd frontend
 npm run dev
 ```
 
-**Terminal 3 - Redis (if not auto-started):**
-```bash
-redis-server
-```
+### Learn More
 
-### Stopping the Platform
-
-- Press `Ctrl+C` in each terminal to stop the services
-- To stop Redis (if running as service):
-  - macOS: `brew services stop redis`
-  - Linux: `sudo systemctl stop redis`
-
-## 🐛 Troubleshooting
-
-### "Database connection failed"
-
-```bash
-# Check PostgreSQL is running
-pg_isready
-
-# Check if database exists
-psql -U postgres -l | grep rfq_platform
-
-# If database doesn't exist, create it
-psql -U postgres -c "CREATE DATABASE rfq_platform;"
-```
-
-### "Redis connection failed"
-
-```bash
-# Check Redis is running
-redis-cli ping
-
-# If not running, start it
-redis-server
-```
-
-### "Port 3000 already in use"
-
-```bash
-# Find and kill the process using port 3000 (backend)
-# Windows:
-netstat -ano | findstr :3000
-taskkill /PID <PID> /F
-
-# macOS/Linux:
-lsof -ti:3000 | xargs kill -9
-```
-
-### "Port 5173 already in use"
-
-```bash
-# Start frontend on different port
-npm run dev -- --port 5174
-```
-
-### "Module not found" errors
-
-```bash
-# Clear node_modules and reinstall
-rm -rf node_modules package-lock.json
-npm install
-```
-
-### Database schema import fails
-
-```bash
-# Option 1: Use absolute path
-psql -U postgres -d rfq_platform -f /full/path/to/rfq_tendering_platform_schema_v3.sql
-
-# Option 2: Navigate to Instructions folder first
-cd ../Instructions
-psql -U postgres -d rfq_platform -f rfq_tendering_platform_schema_v3.sql
-```
-
-### Backend starts but shows errors
-
-1. Check `.env` file exists in `backend/` directory
-2. Verify all required environment variables are set
-3. Ensure JWT secrets are at least 32 characters
-4. Check database credentials are correct
-
-## 📝 Next Steps
-
-Now that your environment is set up:
-
-1. **Review the codebase**: Explore the Phase 1 foundation files
-2. **Check task plans**: Review `.rules/TASK_PLAN_PHASE*.md` files
-3. **Start Phase 2**: Begin implementing User Management features
-4. **Run tests**: Use `npm test` to verify functionality
-
-## 🔗 Useful Links
-
-- [Main README](README.md) - Complete documentation
-- [API Endpoints](README.md#api-documentation) - Available API routes
-- [Project Structure](README.md#project-structure) - Code organization
-- [Development Guide](README.md#development) - Dev workflow and scripts
-
-## 💡 Pro Tips
-
-1. **Use separate terminals**: One for backend, one for frontend, one for logs
-2. **Enable auto-save**: Most editors auto-save; backend hot-reloads automatically
-3. **Check logs**: Backend logs show in the terminal where you ran `npm run dev`
-4. **Use PostgreSQL GUI**: Try pgAdmin or DBeaver for easier database management
-5. **Use Redis GUI**: Try RedisInsight for monitoring Redis
-
-## 🆘 Still Stuck?
-
-1. Check the [Troubleshooting](README.md#troubleshooting) section in main README
-2. Verify all prerequisites are installed correctly
-3. Ensure you're in the correct directory when running commands
-4. Check that all services (PostgreSQL, Redis) are running
-5. Review the error messages carefully - they often indicate what's wrong
+- Read the full [README.md](README.md) for comprehensive documentation
+- Explore the API documentation at `http://localhost:3000/api/docs`
+- Check the codebase structure in `backend/src/` and `frontend/src/`
 
 ---
 
-**Happy Coding! 🎉**
+**Quick Reference**
+
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| Frontend | http://localhost:5173 | - |
+| Backend API | http://localhost:3000/api | - |
+| Health Check | http://localhost:3000/health | - |
+| MinIO Console | http://localhost:9001 | minioadmin/minioadmin |
+| PostgreSQL | localhost:5432 | postgres/postgres |
+| Redis | localhost:6379 | - |
+
+**Useful Commands**
+
+```bash
+# Start all services
+docker compose up -d
+
+# Stop all services
+docker compose down
+
+# View logs
+docker compose logs -f
+
+# Restart a specific service
+docker compose restart backend
+
+# Run migrations
+cd backend && node run-migrations.js
+
+# Seed test data
+cd backend && npm run seed:minimal
+
+# Run backend tests
+cd backend && npm test
+
+# Run frontend tests
+cd frontend && npm test
+```
+
+---
+
+**Version**: 1.0.0  
+**Last Updated**: February 17, 2026

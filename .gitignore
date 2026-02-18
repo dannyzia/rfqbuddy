@@ -1,4 +1,121 @@
-# Utility scripts
+# ==============================
+# RFQ Buddy .gitignore
+# Comprehensive pattern file for TypeScript/Node.js/SvelteKit/PostgreSQL/Redis stack
+# ==============================
+
+# ==============================
+# 1. DEPENDENCIES
+# ==============================
+# Node.js package manager files and installed dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.pnpm-store/
+
+# ==============================
+# 2. BUILD & DIST OUTPUTS
+# ==============================
+# TypeScript and build artifacts
+dist/
+build/
+*.tsbuildinfo
+.svelte-kit/
+
+# ==============================
+# 3. ENVIRONMENT & SECRETS
+# ==============================
+# Local environment files (never commit secrets or credentials)
+.env
+.env.local
+.env.*.local
+.env.development
+.env.staging
+.env.test
+backend/.env.test
+
+# ==============================
+# 4. LOGS
+# ==============================
+# Log files from npm, yarn, and application
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+backend/logs/
+
+# ==============================
+# 5. TESTING & COVERAGE
+# ==============================
+# Test artifacts and code coverage reports
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# ==============================
+# 6. IDE & EDITOR FILES
+# ==============================
+# Visual Studio Code
+.vscode/
+*.code-workspace
+.cursor/
+.windsurf/
+.kilocode/
+
+# JetBrains IDEs
+.idea/
+
+# Vim & Emacs
+*.swp
+*.swo
+*~
+
+# ==============================
+# 7. OS-SPECIFIC FILES
+# ==============================
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# ==============================
+# 8. CACHE FILES
+# ==============================
+# ESLint and Prettier caches
+.eslintcache
+.prettiercache
+
+# ==============================
+# 9. DOCKER
+# ==============================
+# Docker build artifacts (if any generated locally)
+.docker-build/
+
+# ==============================
+# 10. PROJECT-SPECIFIC DIRECTORIES
+# ==============================
+# Resource and planning directories
+Resources/
+plans/
+Instructions/
+scripts/
+rfq-platform/
+.rules/
+.serena/
+
+# Local server restart scripts
+restart-servers.bat
+restart-servers.ps1
+
+# ==============================
+# 11. UTILITY & HELPER SCRIPTS
+# ==============================
+# One-off Python and JavaScript utility scripts used for setup/maintenance
 convert_docs.py
 convert_pdfs_to_md.py
 convert_policy_01.py
@@ -9,74 +126,25 @@ extract_pdf_text.py
 fix-award.js
 fix-unused.js
 
-# Ignore directories
-Resources/
-plans/
-Instructions/
-scripts/
-rfq-platform/
-.cursor/
-.rules/
-.vscode/
-.windsurf/
-
-# VS Code workspace files
-*.code-workspace
-
-# Local scripts
-restart-servers.bat
-restart-servers.ps1
-
-# Dependencies
-node_modules/
-
-# Build outputs
-dist/
-build/
-.svelte-kit/
-
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Testing
-coverage/
-.nyc_output/
-playwright-report/
-test-results/
-
-# Misc
-*.tsbuildinfo
-.eslintcache
-.prettiercache
-
-# Ignore all markdown files except essential ones
-*.md
-!README.md
-!QUICKSTART.md
-!database/README.md
-!frontend/README.md
-
-# Test and debug files
+# ==============================
+# 12. TEST & DEBUG FILES
+# ==============================
+# Test utilities and debug scripts (non-test-suite files)
 **/check-*.js
 **/debug-*.js
 **/*_test.json
 **/*test.json
 debug-register.html
+test-db.js
+test-tender-selection.js
+test.ts
+
+# ==============================
+# 13. DOCUMENTATION (SELECTIVE)
+# ==============================
+# Ignore markdown files by default except essential project documentation
+*.md
+!README.md
+!QUICKSTART.md
+!database/README.md
+!frontend/README.md

@@ -239,6 +239,9 @@
     <!-- Actions -->
     <div class="chaingpt-flex chaingpt-gap-4">
       {#if $isBuyer && tenderQuery.data.status === 'published'}
+        <a href="/tenders/{tenderQuery.data.id}/committee" class="chaingpt-btn chaingpt-btn-primary">
+          Manage Committee
+        </a>
         <a href="/tenders/{tenderQuery.data.id}/edit" class="chaingpt-btn chaingpt-btn-secondary">
           Edit Tender
         </a>

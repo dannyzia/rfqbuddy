@@ -20,12 +20,13 @@ export async function validateTenderTypeMatchesOrgType(
     const userOrgType = req.user!.organizationType;
     
     if (!tenderType) {
-      return res.status(400).json({
+      res.status(400).json({
         error: {
           code: 'TENDER_TYPE_REQUIRED',
           message: 'Tender type is required'
         }
       });
+      return;
     }
     
     // Look up tender type definition
@@ -35,12 +36,13 @@ export async function validateTenderTypeMatchesOrgType(
     );
     
     if (rows.length === 0) {
-      return res.status(400).json({
+      res.status(400).json({
         error: {
           code: 'INVALID_TENDER_TYPE',
           message: `Tender type '${tenderType}' not found or inactive`
         }
       });
+      return;
     }
     
     const isGovtType = rows[0].is_govt_type;
@@ -48,21 +50,23 @@ export async function validateTenderTypeMatchesOrgType(
     
     // Validate match
     if (isGovtType && !isGovtOrg) {
-      return res.status(403).json({
+      res.status(403).json({
         error: {
           code: 'ORG_TYPE_MISMATCH',
           message: `Tender type '${tenderType}' is only available to government organizations. Non-government organizations should use NRQ types.`
         }
       });
+      return;
     }
     
     if (!isGovtType && isGovtOrg) {
-      return res.status(403).json({
+      res.status(403).json({
         error: {
           code: 'ORG_TYPE_MISMATCH',
           message: `Tender type '${tenderType}' is only available to non-government organizations. Government organizations should use PG/PW/PPS types.`
         }
       });
+      return;
     }
     
     next();

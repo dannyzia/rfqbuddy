@@ -5,7 +5,6 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
-import { validateTenderTypeMatchesOrgType } from '../middleware/organizationType.middleware';
 import * as tenderTypeController from '../controllers/tenderType.controller';
 import * as documentChecklistController from '../controllers/documentChecklist.controller';
 import {

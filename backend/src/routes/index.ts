@@ -12,6 +12,10 @@ import { exportRoutes } from "./export.routes";
 import tenderTypeRoutes from "./tenderType.routes";
 import documentChecklistRoutes from "./documentChecklist.routes";
 import simpleRfqRoutes from "./simpleRfq.routes";
+import committeeRoutes from "./committee.routes";
+import subscriptionRoutes from "./subscription.routes";
+import workflowRoutes from "./workflow.routes";
+import enhancedTenderRoutes from "./enhancedTender.routes";
 
 const router = Router();
 
@@ -28,5 +32,9 @@ router.use("/", evaluationRoutes);
 router.use("/", notificationRoutes);
 router.use("/admin", adminRoutes);
 router.use("/", exportRoutes);
+router.use("/committee", committeeRoutes);
+router.use("/subscription", subscriptionRoutes);
+router.use("/workflow", workflowRoutes);
+router.use("/enhanced-tenders", enhancedTenderRoutes);
 
 export { router as apiRoutes };

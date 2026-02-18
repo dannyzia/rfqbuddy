@@ -32,6 +32,15 @@ module.exports = {
     "no-console": "off",
     "prefer-const": "error",
     "no-var": "error",
+    "@typescript-eslint/no-var-requires": "off",
   },
+  overrides: [
+    {
+      files: ["**/__tests__/**/*.test.ts", "**/__tests__/**/*.spec.ts"],
+      rules: {
+        "@typescript-eslint/no-var-requires": "off",
+      },
+    },
+  ],
   ignorePatterns: ["dist", "node_modules", "*.js", ".eslintrc.cjs"],
 };

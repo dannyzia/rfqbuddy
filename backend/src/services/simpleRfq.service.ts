@@ -1,13 +1,13 @@
 import { pool } from '../config/database';
 import { v4 as uuidv4 } from 'uuid';
-import { tenderTypeService } from './tenderTypeSelector.service';
+import { getTenderTypeByCode } from './tenderTypeSelector.service';
 import { OrganizationType } from '../types/organization.types';
 
 export const simpleRfqDb = {
   async createSimpleRfq(rfqData: any, userOrgType: OrganizationType) {
     // NEW: Validate tender type against organization type
     const { rfqDetails } = rfqData;
-    const { tenderType, estimatedValue, currency, rfqType } = rfqDetails;
+    const { tenderType, estimatedValue, currency } = rfqDetails;
     
     if (!tenderType) {
       throw Object.assign(new Error('Tender type is required for Simple RFQ'), {
@@ -48,7 +48,7 @@ export const simpleRfqDb = {
     
     // NEW: Validate value against tender type ranges
     if (estimatedValue !== undefined && estimatedValue > 0) {
-      const tenderTypeDef = await tenderTypeService.getTenderTypeByCode(tenderType);
+      const tenderTypeDef = await getTenderTypeByCode(tenderType);
       
       // Convert estimated value to BDT for comparison (assuming 100 BDT = $1)
       const valueInBDT = currency === 'USD' ? estimatedValue * 100 : estimatedValue;

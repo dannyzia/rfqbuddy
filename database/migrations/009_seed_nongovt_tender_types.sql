@@ -12,7 +12,8 @@ INSERT INTO tender_type_definitions (
   requires_performance_security, performance_security_percent,
   requires_two_envelope, requires_newspaper_ad, requires_prequalification,
   min_submission_days, max_submission_days, default_validity_days,
-  section_count, is_international, is_direct_procurement, is_govt_type, is_active
+  section_count, is_international, is_direct_procurement, is_govt_type, is_active,
+  method
 ) VALUES (
   'NRQ1',
   'Simple RFQ - Basic (up to $10,000)',
@@ -23,7 +24,8 @@ INSERT INTO tender_type_definitions (
   FALSE, NULL,  -- No performance security
   FALSE, FALSE, FALSE,  -- Simplified process
   2, 7, 30,  -- 2-7 days submission, 30 days validity
-  3, FALSE, FALSE, FALSE, TRUE  -- 3 sections, not international, not direct, NON-GOVT type
+  3, FALSE, FALSE, FALSE, TRUE,  -- 3 sections, not international, not direct, NON-GOVT type
+  'rfq'  -- RFQ method
 ) ON CONFLICT (code) DO NOTHING;
 
 -- NRQ2: Standard RFQ ($10,000 - $50,000 USD)
@@ -34,7 +36,8 @@ INSERT INTO tender_type_definitions (
   requires_performance_security, performance_security_percent,
   requires_two_envelope, requires_newspaper_ad, requires_prequalification,
   min_submission_days, max_submission_days, default_validity_days,
-  section_count, is_international, is_direct_procurement, is_govt_type, is_active
+  section_count, is_international, is_direct_procurement, is_govt_type, is_active,
+  method
 ) VALUES (
   'NRQ2',
   'Standard RFQ ($10,000 - $50,000)',
@@ -45,7 +48,8 @@ INSERT INTO tender_type_definitions (
   TRUE, 5.00,  -- 5% performance security
   FALSE, FALSE, FALSE,  -- No two-envelope, no newspaper ad
   5, 14, 60,  -- 5-14 days submission, 60 days validity
-  4, FALSE, FALSE, FALSE, TRUE  -- 4 sections, NON-GOVT type
+  4, FALSE, FALSE, FALSE, TRUE,  -- 4 sections, NON-GOVT type
+  'rfq'  -- RFQ method
 ) ON CONFLICT (code) DO NOTHING;
 
 -- NRQ3: Detailed Tender (above $50,000 USD)
@@ -56,7 +60,8 @@ INSERT INTO tender_type_definitions (
   requires_performance_security, performance_security_percent,
   requires_two_envelope, requires_newspaper_ad, requires_prequalification,
   min_submission_days, max_submission_days, default_validity_days,
-  section_count, is_international, is_direct_procurement, is_govt_type, is_active
+  section_count, is_international, is_direct_procurement, is_govt_type, is_active,
+  method
 ) VALUES (
   'NRQ3',
   'Detailed Tender (above $50,000)',
@@ -67,7 +72,8 @@ INSERT INTO tender_type_definitions (
   TRUE, 10.00,  -- 10% performance security
   TRUE, FALSE, FALSE,  -- Two-envelope system
   10, 21, 90,  -- 10-21 days submission, 90 days validity
-  6, FALSE, FALSE, FALSE, TRUE  -- 6 sections, NON-GOVT type
+  6, FALSE, FALSE, FALSE, TRUE,  -- 6 sections, NON-GOVT type
+  'rfq'  -- RFQ method
 ) ON CONFLICT (code) DO NOTHING;
 
 COMMIT;

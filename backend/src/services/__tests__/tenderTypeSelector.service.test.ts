@@ -1,4 +1,5 @@
 import * as tenderTypeService from '../tenderTypeSelector.service';
+import { OrganizationType } from '../../types/organization.types';
 
 describe('getValueRangesForProcurementType', () => {
   // Basic functionality
@@ -58,10 +59,14 @@ describe('getValueRangesForProcurementType', () => {
   test('should return ranges sorted by minValue', async () => {
     const result = await tenderTypeService.getValueRangesForProcurementType('goods');
     
+    // Check that ranges are sorted by minValue (allowing equal values for special types)
     for (let i = 1; i < result.ranges.length; i++) {
-      expect(result.ranges[i].minValue).toBeGreaterThan(
-        result.ranges[i - 1].minValue
-      );
+      const currentMinValue = result.ranges[i].minValue;
+      const previousMinValue = result.ranges[i - 1]?.minValue ?? 0;
+      
+      // Special types (PG4, PG5A, PG9A) can have same minValue as PG1 (0)
+      // So we check that current is >= previous, not strictly >
+      expect(currentMinValue).toBeGreaterThanOrEqual(previousMinValue);
     }
   });
 
@@ -88,7 +93,8 @@ describe('suggestTenderType', () => {
     const suggestions = await tenderTypeService.suggestTenderType({
       procurementType: 'goods',
       estimatedValue: 500000,
-      isInternational: false
+      isInternational: false,
+      organizationType: OrganizationType.Government
     });
 
     expect(suggestions).toBeDefined();
@@ -101,7 +107,8 @@ describe('suggestTenderType', () => {
     const suggestions = await tenderTypeService.suggestTenderType({
       procurementType: 'goods',
       estimatedValue: 3000000, // 30 Lac
-      isInternational: false
+      isInternational: false,
+      organizationType: OrganizationType.Government
     });
 
     expect(suggestions[0].code).toBe('PG2');
@@ -147,7 +154,8 @@ describe('suggestTenderType', () => {
     const suggestions = await tenderTypeService.suggestTenderType({
       procurementType: 'works',
       estimatedValue: 1000000, // 10 Lac
-      isInternational: false
+      isInternational: false,
+      organizationType: OrganizationType.Government
     });
 
     expect(suggestions[0].code).toBe('PW1');
@@ -183,7 +191,8 @@ describe('suggestTenderType', () => {
       isEmergency: true
     });
 
-    expect(suggestions[0].code).toBe('PG9A'); // Emergency should override
+    // Emergency should override
+    expect(suggestions[0].code).toBe('PG9A');
   });
 
   test('should handle turnkey priority over value-based selection', async () => {
@@ -193,6 +202,7 @@ describe('suggestTenderType', () => {
       isTurnkey: true
     });
 
+    // Turnkey should take priority over international in this implementation
     expect(suggestions[0].code).toBe('PG5A');
   });
 
@@ -261,6 +271,7 @@ describe('getTenderTypeByCode', () => {
     expect(type.code).toBe('PW1');
     expect(type.procurement_type).toBe('works');
     expect(Number(type.max_value_bdt)).toBe(1500000);
+    expect(type.requires_tender_security).toBe(false);
   });
 
   test('should return PPS2 details', async () => {
@@ -291,7 +302,8 @@ describe('Edge Cases and Error Handling', () => {
     const suggestions = await tenderTypeService.suggestTenderType({
       procurementType: 'works',
       estimatedValue: 1000000,
-      isEmergency: true
+      isEmergency: true,
+      organizationType: OrganizationType.Government
     });
 
     // Works doesn't have specific emergency type, should fall back to normal logic
@@ -326,22 +338,27 @@ describe('Edge Cases and Error Handling', () => {
     // Test exactly 8 Lac (boundary between PG1 and PG2)
     const suggestions1 = await tenderTypeService.suggestTenderType({
       procurementType: 'goods',
-      estimatedValue: 800000
+      estimatedValue: 800000,
+      organizationType: OrganizationType.Government
     });
+    
     expect(suggestions1[0].code).toBe('PG1');
 
     // Test just above 8 Lac
     const suggestions2 = await tenderTypeService.suggestTenderType({
       procurementType: 'goods',
-      estimatedValue: 800001
+      estimatedValue: 800001,
+      organizationType: OrganizationType.Government
     });
+    
     expect(suggestions2[0].code).toBe('PG2');
   });
 
   test('should handle very high values', async () => {
     const suggestions = await tenderTypeService.suggestTenderType({
       procurementType: 'goods',
-      estimatedValue: 100000000 // 10 Crore
+      estimatedValue: 100000000, // 10 Crore
+      organizationType: OrganizationType.Government
     });
 
     expect(suggestions.length).toBeGreaterThan(0);
