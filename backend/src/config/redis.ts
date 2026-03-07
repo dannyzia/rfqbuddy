@@ -3,79 +3,96 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Upstash Redis configuration with TLS support (mock in test environment)
+// Upstash Redis configuration with TLS support (mock in test or when REDIS_URL is missing)
 const _redisMockStore = new Map<string, string>();
 
+const _redisMock = {
+  // Mock Redis client — stateful in-memory store so set/get/del work correctly
+  on: () => {},
+  disconnect: async () => {},
+  get: async (key: string) => _redisMockStore.get(key) ?? null,
+  set: async (key: string, value: string) => {
+    _redisMockStore.set(key, value);
+    return "OK";
+  },
+  setex: async (key: string, _ttl: number, value: string) => {
+    _redisMockStore.set(key, value);
+    return "OK";
+  },
+  del: async (key: string) => {
+    const existed = _redisMockStore.has(key);
+    _redisMockStore.delete(key);
+    return existed ? 1 : 0;
+  },
+  exists: async (key: string) => (_redisMockStore.has(key) ? 1 : 0),
+  flushdb: async () => {
+    _redisMockStore.clear();
+    return "OK";
+  },
+  flushall: async () => {
+    _redisMockStore.clear();
+    return "OK";
+  },
+  incr: async () => 1,
+  decr: async () => -1,
+  incrby: async () => 1,
+  decrby: async () => -1,
+  expire: async () => 1,
+  ttl: async () => -1,
+  keys: async () => [],
+  mget: async () => [],
+  mset: async () => "OK",
+  hget: async () => null,
+  hset: async () => 1,
+  hdel: async () => 1,
+  hgetall: async () => ({}),
+  hkeys: async () => [],
+  hvals: async () => [],
+  hlen: async () => 0,
+  hexists: async () => 0,
+  lpush: async () => 1,
+  rpush: async () => 1,
+  lpop: async () => null,
+  rpop: async () => null,
+  lrange: async () => [],
+  lindex: async () => null,
+  llen: async () => 0,
+  sadd: async () => 1,
+  srem: async () => 1,
+  smembers: async () => [],
+  sismember: async () => 0,
+  scard: async () => 0,
+  zadd: async () => 1,
+  zrem: async () => 1,
+  zrange: async () => [],
+  zscore: async () => null,
+  zrank: async () => null,
+  zcard: async () => 0,
+  ping: async () => "PONG",
+  quit: async () => "OK",
+  connect: async () => {},
+  select: async () => "OK",
+  subscribe: async () => {},
+  unsubscribe: async () => {},
+  duplicate: function (this: typeof _redisMock) {
+    return this;
+  },
+  publish: async () => 0,
+} as unknown as Redis;
+
+const useRedisMock =
+  process.env.NODE_ENV === "test" || !process.env.REDIS_URL?.trim();
+
+if (useRedisMock && process.env.NODE_ENV === "production") {
+  console.warn(
+    "⚠️ REDIS_URL is not set — using in-memory Redis mock. Set REDIS_URL (e.g. Upstash) for production cache/sessions."
+  );
+}
+
 const redisClient =
-  process.env.NODE_ENV === "test"
-    ? ({
-        // Mock Redis client for tests — stateful in-memory store so set/get/del work correctly
-        on: () => {},
-        disconnect: async () => {},
-        get: async (key: string) => _redisMockStore.get(key) ?? null,
-        set: async (key: string, value: string) => {
-          _redisMockStore.set(key, value);
-          return "OK";
-        },
-        setex: async (key: string, _ttl: number, value: string) => {
-          _redisMockStore.set(key, value);
-          return "OK";
-        },
-        del: async (key: string) => {
-          const existed = _redisMockStore.has(key);
-          _redisMockStore.delete(key);
-          return existed ? 1 : 0;
-        },
-        exists: async (key: string) => (_redisMockStore.has(key) ? 1 : 0),
-        flushdb: async () => {
-          _redisMockStore.clear();
-          return "OK";
-        },
-        flushall: async () => {
-          _redisMockStore.clear();
-          return "OK";
-        },
-        incr: async () => 1,
-        decr: async () => -1,
-        incrby: async () => 1,
-        decrby: async () => -1,
-        expire: async () => 1,
-        ttl: async () => -1,
-        keys: async () => [],
-        mget: async () => [],
-        mset: async () => "OK",
-        hget: async () => null,
-        hset: async () => 1,
-        hdel: async () => 1,
-        hgetall: async () => ({}),
-        hkeys: async () => [],
-        hvals: async () => [],
-        hlen: async () => 0,
-        hexists: async () => 0,
-        lpush: async () => 1,
-        rpush: async () => 1,
-        lpop: async () => null,
-        rpop: async () => null,
-        lrange: async () => [],
-        lindex: async () => null,
-        llen: async () => 0,
-        sadd: async () => 1,
-        srem: async () => 1,
-        smembers: async () => [],
-        sismember: async () => 0,
-        scard: async () => 0,
-        zadd: async () => 1,
-        zrem: async () => 1,
-        zrange: async () => [],
-        zscore: async () => null,
-        zrank: async () => null,
-        zcard: async () => 0,
-        ping: async () => "PONG",
-        quit: async () => "OK",
-        connect: async () => {},
-        select: async () => "OK",
-      } as unknown as Redis)
-    : new Redis(process.env.REDIS_URL || "", {
+  useRedisMock
+    ? _redisMock
+    : new Redis(process.env.REDIS_URL!, {
         tls:
           process.env.NODE_ENV === "production"
             ? {}

@@ -5,5 +5,8 @@
   "installCommand": "cd frontend && npm install",
   "framework": "sveltekit",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "env": {
+    "PUBLIC_API_URL": "https://rfq-buddy.onrender.com/api"
+  }
 }

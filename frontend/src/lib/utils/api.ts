@@ -1,7 +1,12 @@
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
+import { PUBLIC_API_URL } from '$env/static/public';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// SvelteKit exposes PUBLIC_* via $env/static/public; Vite exposes VITE_* via import.meta.env
+const API_BASE_URL =
+  PUBLIC_API_URL ||
+  import.meta.env.VITE_API_URL ||
+  'http://localhost:3000/api';
 
 interface ApiError {
   code: string;
