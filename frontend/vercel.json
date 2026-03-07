@@ -1,0 +1,6 @@
+{
+  "framework": "sveltekit",
+  "env": {
+    "PUBLIC_API_URL": "https://rfq-buddy.onrender.com/api"
+  }
+}

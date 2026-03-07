@@ -77,6 +77,11 @@ export const config = {
 
   // Logging
   logLevel: process.env.LOG_LEVEL || "debug",
+
+  // Sentry (Error Monitoring)
+  sentry: {
+    dsn: process.env.SENTRY_DSN || "",
+  },
 };
 
 // Re-export connection instances
