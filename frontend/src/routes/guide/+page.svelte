@@ -1,6 +1,8 @@
 <script lang="ts">
   import DocPageHeader from '$lib/components/DocPageHeader.svelte';
-  import { guideSections } from '$lib/content/guide';
+  import RoleAccordion from '$lib/components/RoleAccordion.svelte';
+  import StepList from '$lib/components/StepList.svelte';
+  import { buyerGuide, vendorGuide, gettingStarted, whereToGetHelp } from '$lib/content/guide';
 </script>
 
 <svelte:head>
@@ -27,24 +29,26 @@
     <div class="max-w-3xl mx-auto">
       <h1 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">How to Use RFQ Buddy</h1>
       <p class="mb-10" style="color: var(--text-muted);">
-        A short guide to getting started and using the platform as a buyer or vendor.
+        Select your role below to see step-by-step instructions.
       </p>
 
-      <div class="space-y-10">
-        {#each guideSections as section}
-          <section class="chaingpt-card chaingpt-clip-sm p-6" id={section.id}>
-            <h2 class="text-xl font-semibold mb-3" style="color: var(--text-primary);">{section.title}</h2>
-            <p class="text-sm mb-4" style="color: var(--text-secondary); line-height: 1.6;">{section.content}</p>
-            {#if section.steps && section.steps.length > 0}
-              <ol class="list-decimal list-inside space-y-2 text-sm" style="color: var(--text-secondary);">
-                {#each section.steps as step}
-                  <li class="leading-relaxed">{step}</li>
-                {/each}
-              </ol>
-            {/if}
-          </section>
-        {/each}
+      <!-- Getting Started (shared, always visible) -->
+      <section class="chaingpt-card chaingpt-clip-sm p-6 mb-6" id={gettingStarted.id}>
+        <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">{gettingStarted.title}</h2>
+        <StepList steps={gettingStarted.steps} />
+      </section>
+
+      <!-- Role accordions -->
+      <div class="space-y-4 mb-6">
+        <RoleAccordion section={buyerGuide} initiallyOpen={true} />
+        <RoleAccordion section={vendorGuide} initiallyOpen={false} />
       </div>
+
+      <!-- Where to Get Help (shared, always visible) -->
+      <section class="chaingpt-card chaingpt-clip-sm p-6" id={whereToGetHelp.id}>
+        <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">{whereToGetHelp.title}</h2>
+        <StepList steps={whereToGetHelp.steps} />
+      </section>
 
       <p class="mt-10 text-sm" style="color: var(--text-muted);">
         <a href="/faq" style="color: var(--orange); text-decoration: underline;">FAQ</a> · <a href="/" style="color: var(--orange); text-decoration: underline;">Home</a>

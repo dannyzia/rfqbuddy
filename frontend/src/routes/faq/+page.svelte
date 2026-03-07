@@ -1,11 +1,19 @@
 <script lang="ts">
   import DocPageHeader from '$lib/components/DocPageHeader.svelte';
-  import { faqItems } from '$lib/content/faq';
+  import { faqItems, faqCategories } from '$lib/content/faq';
 
+  /** Track which FAQ item is open (global index across all categories). */
   let openIndex: number | null = null;
 
   function toggle(index: number) {
     openIndex = openIndex === index ? null : index;
+  }
+
+  /** Return items for a given category, retaining the original global index for ARIA. */
+  function itemsForCategory(categoryId: string) {
+    return faqItems
+      .map((item, i) => ({ item, i }))
+      .filter(({ item }) => item.category === categoryId);
   }
 </script>
 
@@ -32,40 +40,51 @@
   <main class="chaingpt-container py-12 relative z-10">
     <div class="max-w-3xl mx-auto">
       <h1 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">Frequently Asked Questions</h1>
-      <p class="mb-8" style="color: var(--text-muted);">
+      <p class="mb-10" style="color: var(--text-muted);">
         Quick answers to common questions about RFQ Buddy.
       </p>
 
-      <div class="space-y-2">
-        {#each faqItems as item, i}
-          <div class="chaingpt-card chaingpt-clip-sm overflow-hidden">
-            <button
-              type="button"
-              class="w-full text-left px-5 py-4 flex justify-between items-center gap-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent"
-              style="color: var(--text-primary); --tw-ring-color: var(--orange);"
-              on:click={() => toggle(i)}
-              aria-expanded={openIndex === i}
-              aria-controls="faq-answer-{i}"
-              id="faq-question-{i}"
-            >
-              <span class="font-medium">{item.question}</span>
-              <span class="flex-shrink-0 text-lg" style="color: var(--grey);" aria-hidden="true">
-                {openIndex === i ? '−' : '+'}
-              </span>
-            </button>
-            <div
-              id="faq-answer-{i}"
-              class="border-t px-5 py-4"
-              style="border-color: var(--grey); color: var(--text-secondary);"
-              role="region"
-              aria-labelledby="faq-question-{i}"
-              hidden={openIndex !== i}
-            >
-              <p class="text-sm leading-relaxed">{item.answer}</p>
+      <!-- Category groups -->
+      {#each faqCategories as category}
+        {@const categoryItems = itemsForCategory(category.id)}
+        {#if categoryItems.length > 0}
+          <section class="mb-8">
+            <h2 class="text-sm font-semibold uppercase tracking-widest mb-3" style="color: var(--text-muted);">
+              {category.label}
+            </h2>
+            <div class="space-y-2">
+              {#each categoryItems as { item, i }}
+                <div class="chaingpt-card chaingpt-clip-sm overflow-hidden">
+                  <button
+                    type="button"
+                    class="w-full text-left px-5 py-4 flex justify-between items-center gap-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent"
+                    style="color: var(--text-primary); --tw-ring-color: var(--orange);"
+                    on:click={() => toggle(i)}
+                    aria-expanded={openIndex === i}
+                    aria-controls="faq-answer-{i}"
+                    id="faq-question-{i}"
+                  >
+                    <span class="font-medium">{item.question}</span>
+                    <span class="flex-shrink-0 text-lg" style="color: var(--grey);" aria-hidden="true">
+                      {openIndex === i ? '−' : '+'}
+                    </span>
+                  </button>
+                  <div
+                    id="faq-answer-{i}"
+                    class="border-t px-5 py-4"
+                    style="border-color: var(--grey); color: var(--text-secondary);"
+                    role="region"
+                    aria-labelledby="faq-question-{i}"
+                    hidden={openIndex !== i}
+                  >
+                    <p class="text-sm leading-relaxed">{item.answer}</p>
+                  </div>
+                </div>
+              {/each}
             </div>
-          </div>
-        {/each}
-      </div>
+          </section>
+        {/if}
+      {/each}
 
       <p class="mt-8 text-sm" style="color: var(--text-muted);">
         <a href="/guide" style="color: var(--orange); text-decoration: underline;">How to use RFQ Buddy</a> · <a href="/" style="color: var(--orange); text-decoration: underline;">Home</a>
