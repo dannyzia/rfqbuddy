@@ -19,10 +19,9 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: rfq-buddy-frontend
-          property: host
+        value: https://rfqbuddy-1x8mvwwer-ziaur-rahmans-projects-8f1a51e3.vercel.app
+      - key: CORS_ORIGINS
+        value: https://rfqbuddy-1x8mvwwer-ziaur-rahmans-projects-8f1a51e3.vercel.app
     healthCheckPath: /health
 
   # Frontend Service
