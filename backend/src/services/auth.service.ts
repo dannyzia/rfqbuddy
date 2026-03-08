@@ -118,8 +118,7 @@ export const authService = {
       `SELECT
         u.id, u.email, u.name, u.password_hash, u.roles, u.is_active, u.created_at, u.updated_at,
         u.organization_id,
-        o.name as organization_name,
-        o.organization_type
+        o.name as organization_name
       FROM users u
       LEFT JOIN organizations o ON u.organization_id = o.id
       WHERE u.email = $1 AND u.is_active = true`,
@@ -418,9 +417,9 @@ export const authService = {
       roles: string[];
       organization_id: string;
       organization_name: string | null;
-      organization_type: OrganizationType | null;
+      organization_type?: OrganizationType | null;
     }>(
-      `SELECT u.id, u.name, u.email, u.roles, u.organization_id, o.name as organization_name, o.organization_type
+      `SELECT u.id, u.name, u.email, u.roles, u.organization_id, o.name as organization_name
        FROM users u
        LEFT JOIN organizations o ON o.id = u.organization_id
        WHERE u.id = $1`,

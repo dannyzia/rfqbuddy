@@ -65,10 +65,9 @@ export const authenticate = async (
       throw new AuthenticationError("Invalid token payload");
     }
     const result = await pool.query(
-      `SELECT u.id, u.email, u.roles, u.organization_id, u.is_active, o.organization_type
-       FROM users u
-       LEFT JOIN organizations o ON u.organization_id = o.id
-       WHERE u.id = $1`,
+      `SELECT id, email, roles, organization_id, is_active
+       FROM users
+       WHERE id = $1`,
       [userId],
     );
 
@@ -93,7 +92,7 @@ export const authenticate = async (
       orgId: user.organization_id?.toString() || user.id.toString(),
       // organizationId is the canonical camelCase alias used by subscription/storage controllers
       organizationId: user.organization_id?.toString() || user.id.toString(),
-      organizationType: user.organization_type,
+      organizationType: undefined,
     };
 
     next();
