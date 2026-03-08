@@ -25,7 +25,15 @@ export const authController = {
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const input = req.body;
+      // #region agent log
+      const logPayload = (loc: string, msg: string, data: Record<string, unknown>) =>
+        fetch('http://127.0.0.1:7913/ingest/f2613068-5959-4e44-9e45-ee5298bee58d', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '2970bd' }, body: JSON.stringify({ sessionId: '2970bd', location: loc, message: msg, data, timestamp: Date.now(), hypothesisId: 'B' }) }).catch(() => {});
+      logPayload('auth.controller.ts:login:entry', 'login request', { email: input?.email });
+      // #endregion
       const result = await authService.login(input);
+      // #region agent log
+      logPayload('auth.controller.ts:login:success', 'login service returned', { hasUser: !!result?.user });
+      // #endregion
       res.status(200).json({
         data: {
           user: result.user,
@@ -34,6 +42,10 @@ export const authController = {
         },
       });
     } catch (err) {
+      // #region agent log
+      const e = err as { message?: string; statusCode?: number };
+      fetch('http://127.0.0.1:7913/ingest/f2613068-5959-4e44-9e45-ee5298bee58d', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '2970bd' }, body: JSON.stringify({ sessionId: '2970bd', location: 'auth.controller.ts:login:catch', message: 'login error', data: { message: e?.message, statusCode: e?.statusCode }, timestamp: Date.now(), hypothesisId: 'C' }) }).catch(() => {});
+      // #endregion
       next(err);
     }
   },

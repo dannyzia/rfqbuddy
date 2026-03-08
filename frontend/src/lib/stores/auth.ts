@@ -103,11 +103,19 @@ export async function initAuth(): Promise<void> {
 export async function login(email: string, password: string): Promise<void> {
   authStore.setLoading(true);
 
+  // #region agent log
+  if (typeof fetch !== 'undefined') fetch('http://127.0.0.1:7913/ingest/f2613068-5959-4e44-9e45-ee5298bee58d',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2970bd'},body:JSON.stringify({sessionId:'2970bd',location:'auth.ts:login:entry',message:'login called',data:{email},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
+
   try {
     const response = await api.post<{ accessToken: string; refreshToken: string; user: User }>(
       '/auth/login',
       { email, password }
     );
+
+    // #region agent log
+    if (typeof fetch !== 'undefined') fetch('http://127.0.0.1:7913/ingest/f2613068-5959-4e44-9e45-ee5298bee58d',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2970bd'},body:JSON.stringify({sessionId:'2970bd',location:'auth.ts:login:success',message:'login response received',data:{hasUser:!!response?.user,hasAccessToken:!!(response as {accessToken?: string})?.accessToken,userKeys:response?.user?Object.keys(response.user):[]},timestamp:Date.now(),hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
 
     if (browser) {
       localStorage.setItem('accessToken', response.accessToken);
@@ -117,6 +125,10 @@ export async function login(email: string, password: string): Promise<void> {
     authStore.setUser(response.user, response.accessToken);
     goto('/dashboard');
   } catch (error) {
+    // #region agent log
+    const err = error as { message?: string; code?: string };
+    if (typeof fetch !== 'undefined') fetch('http://127.0.0.1:7913/ingest/f2613068-5959-4e44-9e45-ee5298bee58d',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2970bd'},body:JSON.stringify({sessionId:'2970bd',location:'auth.ts:login:catch',message:'login failed',data:{message:err?.message,code:err?.code},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     authStore.setLoading(false);
     throw error;
   }

@@ -4,16 +4,23 @@
  * Backend script to seed test users
  * This ensures passwords are properly hashed using the same bcrypt config as the app
  * Usage: node backend/scripts/seed-test-users.js
+ *        ENV_FILE=backend/.env.test node backend/scripts/seed-test-users.js  (seed to .env.test DB)
  */
 
-require('dotenv').config({ path: '.env' });
+const path = require('path');
+const envFile = process.env.ENV_FILE || path.join(process.cwd(), '.env');
+require('dotenv').config({ path: envFile });
 
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 
-const pool = new Pool({
+const poolConfig = {
     connectionString: process.env.DATABASE_URL
-});
+};
+if (process.env.DB_SSL === 'true') {
+    poolConfig.ssl = { rejectUnauthorized: false };
+}
+const pool = new Pool(poolConfig);
 
 const testUsers = [
     {
@@ -21,7 +28,7 @@ const testUsers = [
         org_id: '00000000-0000-0000-0000-000000000001',
         name: 'Admin User',
         email: 'admin@rfqbuddy.com',
-        password: 'admin123',
+        password: '@DELL123dell#',
         roles: ['admin', 'buyer']
     },
     {
@@ -58,11 +65,27 @@ const testUsers = [
     }
 ];
 
+const testOrgs = [
+    { id: '00000000-0000-0000-0000-000000000001', name: 'RFQ Buddy Admin', type: 'buyer' },
+    { id: '00000000-0000-0000-0000-000000000002', name: 'ABC Procurement Ltd', type: 'buyer' },
+    { id: '00000000-0000-0000-0000-000000000003', name: 'XYZ Suppliers Inc', type: 'vendor' }
+];
+
 async function seedUsers() {
     const client = await pool.connect();
     
     try {
         console.log('🌱 Seeding test users...\n');
+        
+        // Ensure organizations exist (required by users FK)
+        for (const org of testOrgs) {
+            await client.query(
+                `INSERT INTO organizations (id, name, type) VALUES ($1, $2, $3)
+                 ON CONFLICT (id) DO NOTHING`,
+                [org.id, org.name, org.type]
+            );
+        }
+        console.log('✅ Organizations ready.\n');
         
         // First check if users already exist
         const result = await client.query(
@@ -81,13 +104,21 @@ async function seedUsers() {
                 [user.email]
             );
             
+            const hash = await bcrypt.hash(user.password, 12);
+            
             if (existing.rows.length > 0) {
-                console.log(`⏭️  ${user.email} already exists, skipping...`);
+                // Update password for admin@rfqbuddy.com so credential changes take effect
+                if (user.email === 'admin@rfqbuddy.com') {
+                    await client.query(
+                        'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE email = $2',
+                        [hash, user.email]
+                    );
+                    console.log(`🔄 Updated password for ${user.email}`);
+                } else {
+                    console.log(`⏭️  ${user.email} already exists, skipping...`);
+                }
                 continue;
             }
-            
-            // Hash password
-            const hash = await bcrypt.hash(user.password, 12);
             
             // Insert user
             await client.query(

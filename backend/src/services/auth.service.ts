@@ -100,7 +100,15 @@ export const authService = {
   },
 
   async login(input: any): Promise<{
-    user: UserWithOrg;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      roles: string[];
+      orgId: string;
+      organizationName?: string;
+      organizationType?: OrganizationType;
+    };
     accessToken: string;
     refreshToken: string;
   }> {
@@ -118,7 +126,14 @@ export const authService = {
       [email],
     );
 
+    // #region agent log
+    fetch('http://127.0.0.1:7913/ingest/f2613068-5959-4e44-9e45-ee5298bee58d', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '2970bd' }, body: JSON.stringify({ sessionId: '2970bd', location: 'auth.service.ts:login:afterQuery', message: 'user lookup', data: { userFound: rows.length > 0 }, timestamp: Date.now(), hypothesisId: 'B' }) }).catch(() => {});
+    // #endregion
+
     if (rows.length === 0) {
+      // #region agent log
+      fetch('http://127.0.0.1:7913/ingest/f2613068-5959-4e44-9e45-ee5298bee58d', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '2970bd' }, body: JSON.stringify({ sessionId: '2970bd', location: 'auth.service.ts:login:throw', message: 'user not found', data: {}, timestamp: Date.now(), hypothesisId: 'B' }) }).catch(() => {});
+      // #endregion
       throw Object.assign(new Error("Invalid credentials"), {
         statusCode: 401,
         code: "UNAUTHORIZED",
@@ -129,7 +144,13 @@ export const authService = {
 
     // Verify password using bcrypt
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    // #region agent log
+    fetch('http://127.0.0.1:7913/ingest/f2613068-5959-4e44-9e45-ee5298bee58d', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '2970bd' }, body: JSON.stringify({ sessionId: '2970bd', location: 'auth.service.ts:login:passwordCheck', message: 'password verified', data: { passwordValid: isPasswordValid }, timestamp: Date.now(), hypothesisId: 'B' }) }).catch(() => {});
+    // #endregion
     if (!isPasswordValid) {
+      // #region agent log
+      fetch('http://127.0.0.1:7913/ingest/f2613068-5959-4e44-9e45-ee5298bee58d', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '2970bd' }, body: JSON.stringify({ sessionId: '2970bd', location: 'auth.service.ts:login:throw', message: 'invalid password', data: {}, timestamp: Date.now(), hypothesisId: 'B' }) }).catch(() => {});
+      // #endregion
       throw Object.assign(new Error("Invalid credentials"), {
         statusCode: 401,
         code: "UNAUTHORIZED",
@@ -149,7 +170,16 @@ export const authService = {
     );
 
     logger.info(`User logged in: ${user.id} (${user.email})`);
-    return { user, accessToken, refreshToken };
+    const publicUser = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      roles: Array.isArray(user.roles) ? user.roles : (user.roles as unknown as string[]),
+      orgId: user.organization_id,
+      organizationName: user.organization_name ?? undefined,
+      organizationType: user.organization_type ?? undefined,
+    };
+    return { user: publicUser, accessToken, refreshToken };
   },
 
   async refreshToken(input: any): Promise<{

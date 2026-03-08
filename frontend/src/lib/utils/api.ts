@@ -89,6 +89,12 @@ class ApiClient {
 
     let response = await fetch(`${this.baseUrl}${endpoint}`, config);
 
+    // #region agent log
+    if (endpoint.includes('/auth/login')) {
+      fetch('http://127.0.0.1:7913/ingest/f2613068-5959-4e44-9e45-ee5298bee58d',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2970bd'},body:JSON.stringify({sessionId:'2970bd',location:'api.ts:request',message:'login request',data:{baseUrl:this.baseUrl,fullUrl:`${this.baseUrl}${endpoint}`,status:response.status},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
+    }
+    // #endregion
+
     // Handle token refresh on 401
     if (response.status === 401 && browser) {
       const newToken = await this.refreshToken();
@@ -103,6 +109,14 @@ class ApiClient {
     }
 
     const data = await response.json();
+
+    // #region agent log
+    if (endpoint.includes('/auth/login')) {
+      const keys = data && typeof data === 'object' ? Object.keys(data) : [];
+      const dataKeys = data?.data && typeof data.data === 'object' ? Object.keys(data.data) : [];
+      fetch('http://127.0.0.1:7913/ingest/f2613068-5959-4e44-9e45-ee5298bee58d',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2970bd'},body:JSON.stringify({sessionId:'2970bd',location:'api.ts:unwrap',message:'login response shape',data:{status:response.status,topKeys:keys,dataKeys},timestamp:Date.now(),hypothesisId:'D'})}).catch(()=>{});
+    }
+    // #endregion
 
     if (!response.ok) {
       // Handle rate limiting with user-friendly message
