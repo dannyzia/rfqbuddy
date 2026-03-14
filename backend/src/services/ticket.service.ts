@@ -1,189 +1,67 @@
-import { v4 as uuidv4 } from 'uuid';
-import { pool, logger } from '../config';
-import type { CreateTicketInput, UpdateTicketInput, TicketFilterInput } from '../schemas/ticket.schema';
-
-export interface TicketRow {
-  id: string;
-  ticket_number: number;
-  type: string;
-  title: string;
-  description: string;
-  priority: string;
-  status: string;
-  submitted_by: string;
-  submitter_name?: string;
-  submitter_email?: string;
-  admin_notes: string | null;
-  resolved_at: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface PaginatedTickets {
-  tickets: TicketRow[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-// ─── Helper Functions ──────────────────────────────────────────────────────────
-
-/**
- * Builds WHERE conditions and parameters for ticket filtering.
- * Consolidates the duplicated filter-building logic from findAll and findByUser.
- */
-function buildFilterConditions(
-  filters: TicketFilterInput,
-  userId?: string,
-): { conditions: string[]; params: unknown[] } {
-  const conditions: string[] = [];
-  const params: unknown[] = [];
-  let i = 1;
-
-  if (userId) {
-    conditions.push(`t.submitted_by = $${i++}`);
-    params.push(userId);
-  }
-
-  if (filters.type) {
-    conditions.push(`t.type = $${i++}`);
-    params.push(filters.type);
-  }
-
-  if (filters.status) {
-    conditions.push(`t.status = $${i++}`);
-    params.push(filters.status);
-  }
-
-  return { conditions, params };
-}
-
-/**
- * Executes a paginated query with count.
- * Consolidates the duplicated pagination logic from findAll and findByUser.
- */
-async function executePaginatedQuery(
-  filters: TicketFilterInput,
-  userId?: string,
-  includeUserDetails = false,
-): Promise<PaginatedTickets> {
-  const { page, limit } = filters;
-  const { conditions, params } = buildFilterConditions(filters, userId);
-  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-
-  // Execute count query
-  const countResult = await pool.query<{ count: string }>(
-    `SELECT COUNT(*) FROM support_tickets t ${where}`,
-    params,
-  );
-  const total = parseInt(countResult.rows[0].count, 10);
-
-  // Build SELECT query based on whether to include user details
-  let selectQuery: string;
-  if (includeUserDetails) {
-    selectQuery = `
-      SELECT t.*,
-             u.first_name || ' ' || u.last_name AS submitter_name,
-             u.email AS submitter_email
-      FROM support_tickets t
-      JOIN users u ON u.id = t.submitted_by
-    `;
-  } else {
-    selectQuery = `
-      SELECT t.*
-      FROM support_tickets t
-    `;
-  }
-
-  // Execute data query with pagination
-  const dataParams = [...params, limit, (page - 1) * limit];
-  const { rows } = await pool.query<TicketRow>(
-    `${selectQuery} ${where}
-     ORDER BY t.created_at DESC
-     LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
-    dataParams,
-  );
-
-  return { tickets: rows, total, page, limit, totalPages: Math.ceil(total / limit) };
-}
+import { db } from '../config/database';
+import { supportTickets, ticketMessages } from '../schema';
+import { eq, desc } from 'drizzle-orm';
 
 export const ticketService = {
-  // ─── Create ─────────────────────────────────────────────────────────────────
-  async create(input: CreateTicketInput, userId: string): Promise<TicketRow> {
-    const id = uuidv4();
-    const { rows } = await pool.query<TicketRow>(
-      `INSERT INTO support_tickets (id, type, title, description, priority, submitted_by)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING *`,
-      [id, input.type, input.title, input.description, input.priority, userId],
-    );
-    logger.info(`Support ticket created: ${id} type=${input.type} by user=${userId}`);
-    return rows[0];
+  async listAll() {
+    return db.select().from(supportTickets).orderBy(desc(supportTickets.created_at));
   },
 
-  // ─── Get all (admin) ─────────────────────────────────────────────────────────
-  async findAll(filters: TicketFilterInput): Promise<PaginatedTickets> {
-    return executePaginatedQuery(
-      filters,
-      undefined,
-      true, // Include user details for admin view
-    );
+  async listByUser(userId: string) {
+    return db.select().from(supportTickets)
+      .where(eq(supportTickets.submitted_by, userId))
+      .orderBy(desc(supportTickets.created_at));
   },
 
-  // ─── Get my tickets (user) ────────────────────────────────────────────────────
-  async findByUser(userId: string, filters: TicketFilterInput): Promise<PaginatedTickets> {
-    return executePaginatedQuery(
-      filters,
-      userId,
-      false, // No user details needed for own tickets
-    );
+  async getById(id: string) {
+    const [ticket] = await db.select().from(supportTickets)
+      .where(eq(supportTickets.id, id)).limit(1);
+    if (!ticket) return null;
+
+    const messages = await db.select().from(ticketMessages)
+      .where(eq(ticketMessages.ticket_id, id))
+      .orderBy(ticketMessages.created_at);
+
+    return { ticket, messages };
   },
 
-  // ─── Get single ───────────────────────────────────────────────────────────────
-  async findById(ticketId: string): Promise<TicketRow | null> {
-    const { rows } = await pool.query<TicketRow>(
-      `SELECT t.*,
-              u.first_name || ' ' || u.last_name AS submitter_name,
-              u.email AS submitter_email
-       FROM support_tickets t
-       JOIN users u ON u.id = t.submitted_by
-       WHERE t.id = $1`,
-      [ticketId],
-    );
-    return rows[0] ?? null;
+  async create(data: {
+    subject: string;
+    description: string;
+    type?: string;
+    priority?: string;
+    submitted_by: string;
+    org_id: string | null;
+  }) {
+    const [ticket] = await db.insert(supportTickets).values({
+      ticket_number: `TKT-${new Date().getFullYear()}-${Date.now().toString(36).toUpperCase()}`,
+      subject: data.subject,
+      description: data.description,
+      type: data.type ?? 'general',
+      priority: data.priority ?? 'medium',
+      submitted_by: data.submitted_by,
+      org_id: data.org_id,
+    }).returning();
+    return ticket;
   },
 
-  // ─── Admin update ─────────────────────────────────────────────────────────────
-  async update(ticketId: string, input: UpdateTicketInput): Promise<TicketRow | null> {
-    const setClauses: string[] = [];
-    const params: unknown[] = [];
-    let i = 1;
+  async addMessage(ticketId: string, senderId: string, message: string, isInternal = false) {
+    const [msg] = await db.insert(ticketMessages).values({
+      ticket_id: ticketId,
+      sender_id: senderId,
+      message,
+      is_internal: isInternal,
+    }).returning();
+    return msg;
+  },
 
-    if (input.status !== undefined) {
-      setClauses.push(`status = $${i++}`);
-      params.push(input.status);
-      if (input.status === 'resolved' || input.status === 'closed') {
-        setClauses.push(`resolved_at = NOW()`);
-      }
-    }
-    if (input.adminNotes !== undefined) {
-      setClauses.push(`admin_notes = $${i++}`);
-      params.push(input.adminNotes);
-    }
-    if (input.priority !== undefined) {
-      setClauses.push(`priority = $${i++}`);
-      params.push(input.priority);
-    }
-
-    if (setClauses.length === 0) return this.findById(ticketId);
-
-    params.push(ticketId);
-    const { rows } = await pool.query<TicketRow>(
-      `UPDATE support_tickets SET ${setClauses.join(', ')} WHERE id = $${i} RETURNING *`,
-      params,
-    );
-    logger.info(`Support ticket updated: ${ticketId}`);
-    return rows[0] ?? null;
+  async update(id: string, data: Record<string, any>) {
+    const [updated] = await db.update(supportTickets).set({
+      ...data,
+      updated_at: new Date(),
+      ...(data.status === 'resolved' ? { resolved_at: new Date() } : {}),
+      ...(data.status === 'closed' ? { closed_at: new Date() } : {}),
+    }).where(eq(supportTickets.id, id)).returning();
+    return updated;
   },
 };

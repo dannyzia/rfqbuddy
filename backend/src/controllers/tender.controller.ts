@@ -1,218 +1,99 @@
-import { Request, Response, NextFunction } from "express";
-import { tenderService } from "../services/tender.service";
-import { itemService } from "../services/item.service";
-import type {
-  CreateTenderInput,
-  UpdateTenderInput,
-  PublishTenderInput,
-} from "../schemas/tender.schema";
-
-/**
- * Map a raw DB TenderRow (snake_case) to the camelCase API response shape.
- * This ensures tests and API consumers receive consistent camelCase field names.
- */
-function mapTenderRow(row: any) {
-  return {
-    id: row.id,
-    referenceNumber: row.tender_number,
-    title: row.title,
-    description: row.description ?? null,
-    status: row.status,
-    organizationId: row.buyer_org_id,
-    tenderType: row.tender_type,
-    visibility: row.visibility,
-    procurementType: row.procurement_type,
-    currency: row.currency,
-    priceBasis: row.price_basis,
-    fundAllocation: row.fund_allocation ?? null,
-    estimatedCost: row.estimated_cost ?? null,
-    bidSecurityAmount: row.bid_security_amount ?? null,
-    preBidMeetingDate: row.pre_bid_meeting_date ?? null,
-    preBidMeetingLink: row.pre_bid_meeting_link ?? null,
-    submissionDeadline: row.submission_deadline,
-    bidOpeningTime: row.bid_opening_time ?? null,
-    validityDays: row.validity_days,
-    twoEnvelopeSystem: row.two_envelope_system ?? false,
-    createdBy: row.created_by,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
-}
+import { FastifyRequest, FastifyReply } from 'fastify';
+import { tenderService } from '../services/tender.service';
 
 export const tenderController = {
-  async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const input = req.body as CreateTenderInput;
-      const user = req.user as any;
-      const tender = await tenderService.create(
-        input,
-        user.id.toString(),
-        user.companyId?.toString() || user.id.toString(),
-      );
-      res.status(201).json({ data: mapTenderRow(tender) });
-    } catch (err) {
-      next(err);
-    }
+  async list(req: FastifyRequest, reply: FastifyReply) {
+    const query = req.query as any;
+    const result = await tenderService.list(req.user, {
+      status: query.status, search: query.search,
+      page: parseInt(query.page ?? '1'), pageSize: parseInt(query.pageSize ?? '20'),
+    });
+    return reply.send(result);
   },
 
-  async findAll(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const user = req.user as any;
-      const role =
-        user.role === "buyer" || user.role === "admin" ? "buyer" : "vendor";
-
-      const page = req.query.page ? parseInt(req.query.page as string, 10) : undefined;
-      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
-      const status = req.query.status as string | undefined;
-
-      const { rows, total } = await tenderService.findAll(
-        user.companyId?.toString() || user.id.toString(),
-        role,
-        { page, limit, status },
-      );
-
-      const data = rows.map(mapTenderRow);
-
-      if (page !== undefined || limit !== undefined) {
-        const effectivePage = page ?? 1;
-        const effectiveLimit = limit ?? 20;
-        res.status(200).json({
-          data,
-          pagination: {
-            page: effectivePage,
-            limit: effectiveLimit,
-            total,
-          },
-        });
-      } else {
-        res.status(200).json({ data });
-      }
-    } catch (err) {
-      next(err);
-    }
+  async getById(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const tender = await tenderService.getById(id);
+    if (!tender) return reply.code(404).send({ error: 'Tender not found' });
+    return reply.send(tender);
   },
 
-  async findById(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const { id } = req.params;
-      const user = req.user as any;
-
-      // Validate UUID format — non-UUID ids cause PG error 22P02 (invalid_text_representation)
-      const UUID_REGEX =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!UUID_REGEX.test(id)) {
-        res
-          .status(404)
-          .json({ error: { code: "NOT_FOUND", message: "Tender not found" } });
-        return;
-      }
-
-      const tender = await tenderService.findById(id);
-
-      if (!tender) {
-        res
-          .status(404)
-          .json({ error: { code: "NOT_FOUND", message: "Tender not found" } });
-        return;
-      }
-
-      // Fetch associated items so the response always includes them
-      const items = await itemService.findByTenderId(id);
-
-      const isOwner =
-        tender.buyer_org_id === user.companyId?.toString() ||
-        user.id.toString();
-      const isVendor = user.role === "vendor";
-
-      if (isVendor && !isOwner) {
-        const mapped = mapTenderRow(tender);
-        const response = {
-          ...mapped,
-          items,
-          fundAllocation: undefined,
-          estimatedCost: undefined,
-        };
-        res.status(200).json({ data: response });
-        return;
-      }
-
-      res.status(200).json({ data: { ...mapTenderRow(tender), items } });
-    } catch (err) {
-      next(err);
-    }
+  async create(req: FastifyRequest, reply: FastifyReply) {
+    const tender = await tenderService.create(req.body as any, req.user);
+    return reply.code(201).send(tender);
   },
 
-  async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { id } = req.params;
-      const input = req.body as UpdateTenderInput;
-      const user = req.user as any;
-      const tender = await tenderService.update(
-        id,
-        input,
-        user.companyId?.toString() || user.id.toString(),
-      );
-      res.status(200).json({ data: mapTenderRow(tender) });
-    } catch (err) {
-      next(err);
-    }
+  async update(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const updated = await tenderService.update(id, req.body as any, req.user);
+    return reply.send(updated);
   },
 
-  async publish(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const { id } = req.params;
-      const input = req.body as PublishTenderInput;
-      const user = req.user as any;
-      const tender = await tenderService.publish(
-        id,
-        user.companyId?.toString() || user.id.toString(),
-        input.invitedVendorIds,
-      );
-      res.status(200).json({ data: mapTenderRow(tender) });
-    } catch (err) {
-      next(err);
-    }
+  async publish(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const updated = await tenderService.publish(id, req.user);
+    return reply.send(updated);
   },
 
-  async cancel(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { id } = req.params;
-      const user = req.user as any;
-      const tender = await tenderService.cancel(
-        id,
-        user.companyId?.toString() || user.id.toString(),
-      );
-      res.status(200).json({ data: mapTenderRow(tender) });
-    } catch (err) {
-      next(err);
-    }
+  async close(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const updated = await tenderService.close(id, req.user);
+    return reply.send(updated);
   },
 
-  async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { id } = req.params;
-      const user = req.user as any;
-      await tenderService.delete(
-        id,
-        user.companyId?.toString() || user.id.toString(),
-      );
-      res
-        .status(200)
-        .json({ data: { message: "Tender deleted successfully" } });
-    } catch (err) {
-      next(err);
-    }
+  async forward(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const { to_stage, to_user_id, notes } = req.body as any;
+    const updated = await tenderService.forward(id, to_stage, to_user_id, notes, req.user);
+    return reply.send(updated);
+  },
+
+  async remove(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    await tenderService.delete(id, req.user);
+    return reply.send({ success: true });
+  },
+
+  // Withhold
+  async withhold(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const { reason } = req.body as { reason: string };
+    const updated = await tenderService.withhold(id, reason, req.user);
+    return reply.send(updated);
+  },
+
+  // Line items
+  async getItems(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const items = await tenderService.getItems(id);
+    return reply.send(items);
+  },
+
+  async addItems(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const { items } = req.body as { items: any[] };
+    const created = await tenderService.addItems(id, items, req.user);
+    return reply.code(201).send(created);
+  },
+
+  // Invitations
+  async getInvitations(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const invitations = await tenderService.getInvitations(id);
+    return reply.send(invitations);
+  },
+
+  async invite(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const { vendor_org_ids } = req.body as { vendor_org_ids: string[] };
+    const invitations = await tenderService.invite(id, vendor_org_ids, req.user);
+    return reply.code(201).send(invitations);
+  },
+
+  async award(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const { bid_id, notes } = req.body as { bid_id: string; notes?: string };
+    const updated = await tenderService.award(id, { bid_id, notes }, req.user);
+    return reply.send(updated);
   },
 };

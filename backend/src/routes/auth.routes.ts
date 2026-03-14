@@ -1,35 +1,10 @@
-import { Router } from "express";
-import { authController } from "../controllers/auth.controller";
-import { validate } from "../middleware/validate.middleware";
-import { authenticate } from "../middleware/auth.middleware";
-import {
-  registerSchema,
-  loginSchema,
-  refreshTokenSchema,
-  forgotPasswordSchema,
-  resetPasswordSchema,
-} from "../schemas/auth.schema";
+import { FastifyInstance } from 'fastify';
+import { authController } from '../controllers/auth.controller';
+import { requireAuth } from '../middleware/requireAuth';
 
-const router = Router();
-
-router.post("/register", validate(registerSchema), authController.register);
-router.post("/login", validate(loginSchema), authController.login);
-router.post(
-  "/refresh",
-  validate(refreshTokenSchema),
-  authController.refreshToken,
-);
-router.post(
-  "/forgot-password",
-  validate(forgotPasswordSchema),
-  authController.forgotPassword,
-);
-router.post(
-  "/reset-password",
-  validate(resetPasswordSchema),
-  authController.resetPassword,
-);
-router.post("/logout", authController.logout);
-router.get("/me", authenticate, authController.getMe);
-
-export { router as authRoutes };
+export async function authRoutes(app: FastifyInstance) {
+  app.post('/sign-up', authController.signUp);
+  app.post('/sign-in', authController.signIn);
+  app.post('/sign-out', { preHandler: [requireAuth] }, authController.signOut);
+  app.get('/profile', { preHandler: [requireAuth] }, authController.getProfile);
+}

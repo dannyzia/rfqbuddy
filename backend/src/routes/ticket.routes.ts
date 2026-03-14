@@ -1,26 +1,15 @@
-import { Router } from 'express';
+import { FastifyInstance } from 'fastify';
 import { ticketController } from '../controllers/ticket.controller';
-import { authenticate, authorize, validate } from '../middleware';
-import { createTicketSchema, updateTicketSchema } from '../schemas/ticket.schema';
+import { requireAuth } from '../middleware/requireAuth';
+import { requireRole } from '../middleware/requireRole';
 
-const router = Router();
+export async function ticketRoutes(app: FastifyInstance) {
+  const auth = [requireAuth];
+  const admin = [requireAuth, requireRole(['super_admin'])];
 
-// All ticket routes require a valid session
-router.use(authenticate);
-
-// Any authenticated user can submit a ticket
-router.post('/', validate(createTicketSchema), ticketController.create);
-
-// Current user's own tickets
-router.get('/mine', ticketController.findMine);
-
-// Detail view — access-controlled inside controller
-router.get('/:ticketId', ticketController.findById);
-
-// Admin: list all tickets
-router.get('/', authorize('admin'), ticketController.findAll);
-
-// Admin: update ticket status / notes / priority
-router.patch('/:ticketId', validate(updateTicketSchema), ticketController.update);
-
-export { router as ticketRoutes };
+  app.get('/', { preHandler: auth }, ticketController.list);
+  app.get('/:id', { preHandler: auth }, ticketController.getById);
+  app.post('/', { preHandler: auth }, ticketController.create);
+  app.post('/:id/messages', { preHandler: auth }, ticketController.addMessage);
+  app.patch('/:id', { preHandler: admin }, ticketController.update);
+}

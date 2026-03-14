@@ -1,424 +1,263 @@
-import { v4 as uuidv4 } from "uuid";
-import { pool, logger } from "../config";
-import type {
-  CreateTenderInput,
-  UpdateTenderInput,
-} from "../schemas/tender.schema";
-
-interface TenderRow {
-  id: string;
-  tender_number: string;
-  buyer_org_id: string;
-  title: string;
-  description?: string | null;
-  scope_of_work?: string | null;
-  tender_type: string;
-  visibility: string;
-  procurement_type: string;
-  currency: string;
-  price_basis: string;
-  fund_allocation: number | null;
-  estimated_cost?: number | null;
-  bid_security_amount: number | null;
-  pre_bid_meeting_date: string | null;
-  pre_bid_meeting_link: string | null;
-  submission_deadline: string;
-  bid_opening_time: string | null;
-  validity_days: number;
-  two_envelope_system?: boolean | null;
-  status: string;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-}
-
-const VALID_TRANSITIONS: Record<string, string[]> = {
-  draft: ["published", "cancelled"],
-  published: ["clarification", "closed", "cancelled"],
-  clarification: ["published", "closed", "cancelled"],
-  closed: ["tech_eval", "cancelled"],
-  tech_eval: ["comm_eval", "cancelled"],
-  comm_eval: ["awarded", "cancelled"],
-  awarded: [],
-  cancelled: [],
-};
-
-const generateTenderNumber = async (buyerOrgId: string): Promise<string> => {
-  const year = new Date().getUTCFullYear();
-  const { rows } = await pool.query(
-    `SELECT COUNT(*) as count FROM tenders WHERE buyer_org_id = $1 AND EXTRACT(YEAR FROM created_at AT TIME ZONE 'UTC') = $2`,
-    [buyerOrgId, year],
-  );
-  const count = parseInt(rows[0].count, 10) + 1;
-  return `RFQ-${year}-${String(count).padStart(5, "0")}`;
-};
+import { db } from '../config/database';
+import { tenders, tenderItems, tenderInvitations, tenderDocuments, tenderAssignments } from '../schema';
+import { eq, and, sql, desc, ilike, inArray } from 'drizzle-orm';
+import { auditService } from './audit.service';
+import { notificationService } from './notification.service';
+import type { NewTender, RequestUser, PaginatedResponse, Tender } from '../types';
 
 export const tenderService = {
-  async create(
-    input: CreateTenderInput,
-    userId: string,
-    orgId: string,
-  ): Promise<TenderRow> {
-    const id = uuidv4();
-    const tenderNumber = await generateTenderNumber(orgId);
+  async list(user: RequestUser, filters: {
+    status?: string;
+    search?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<PaginatedResponse<Tender>> {
+    const page = filters.page ?? 1;
+    const pageSize = filters.pageSize ?? 20;
+    const offset = (page - 1) * pageSize;
 
-    // Step 1: Fetch tender type defaults
-    const typeResult = await pool.query(
-      `SELECT
-        code,
-        requires_tender_security,
-        tender_security_percent,
-        min_submission_days,
-        default_validity_days,
-        requires_two_envelope
-      FROM tender_type_definitions
-      WHERE code = $1 AND is_active = TRUE`,
-      [input.tenderType],
-    );
+    let query = db.select().from(tenders).$dynamic();
 
-    if (typeResult.rows.length === 0) {
-      throw Object.assign(
-        new Error(`Invalid tender type: ${input.tenderType}`),
-        {
-          statusCode: 400,
-          code: "INVALID_TENDER_TYPE",
-        },
-      );
-    }
-
-    const tenderTypeDef = typeResult.rows[0];
-
-    // Step 2: Calculate/validate bid security
-    let bidSecurityAmount = input.bidSecurityAmount;
-
-    if (
-      !bidSecurityAmount &&
-      tenderTypeDef.requires_tender_security &&
-      input.estimatedCost
-    ) {
-      // Auto-calculate if not provided
-      const calculatedAmount = Math.round(
-        (input.estimatedCost * tenderTypeDef.tender_security_percent) / 100,
-      );
-      bidSecurityAmount = calculatedAmount;
-
-      logger.info(
-        `Auto-calculated bid security for tender ${id}: ${calculatedAmount}`,
-      );
-    }
-
-    // Step 3: Set validity days (use type default if not provided)
-    const validityDays =
-      input.validityDays || tenderTypeDef.default_validity_days;
-
-    // Step 4: Validate submission deadline (use UTC for timezone consistency)
-    const submissionDeadline = new Date(input.submissionDeadline);
-    const minDaysFromNow = new Date();
-    minDaysFromNow.setUTCDate(
-      minDaysFromNow.getUTCDate() + tenderTypeDef.min_submission_days,
-    );
-
-    if (submissionDeadline < minDaysFromNow) {
-      throw Object.assign(
-        new Error(
-          `Submission deadline must be at least ${tenderTypeDef.min_submission_days} days from now for ${input.tenderType}`,
-        ),
-        {
-          statusCode: 400,
-          code: "INVALID_SUBMISSION_DEADLINE",
-        },
-      );
-    }
-
-    // Step 5: Validate two-envelope requirement
-    const twoEnvelopeSystem = input.twoEnvelopeSystem ?? false;
-
-    if (tenderTypeDef.requires_two_envelope && !twoEnvelopeSystem) {
-      throw Object.assign(
-        new Error(
-          `${input.tenderType} requires two-envelope system (technical + commercial separation)`,
-        ),
-        {
-          statusCode: 400,
-          code: "TWO_ENVELOPE_REQUIRED",
-        },
-      );
-    }
-
-    // Step 6: Insert tender with enhanced data
-    // NOTE: description, scope_of_work, and estimated_cost are accepted by the schema
-    // but stored in separate columns only if they exist in the DB.
-    // The mapper in tender.controller.ts returns them safely using the ?? null fallback.
-    const { rows } = await pool.query<TenderRow>(
-      `INSERT INTO tenders (
-        id, tender_number, buyer_org_id, title, tender_type, visibility,
-        procurement_type, currency, price_basis, fund_allocation,
-        bid_security_amount, pre_bid_meeting_date, pre_bid_meeting_link,
-        submission_deadline, bid_opening_time, validity_days, status, created_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, 'draft', $17)
-      RETURNING *`,
-      [
-        id,
-        tenderNumber,
-        orgId,
-        input.title,
-        input.tenderType,
-        input.visibility,
-        input.procurementType,
-        input.currency,
-        input.priceBasis,
-        input.fundAllocation || null,
-        bidSecurityAmount || null,
-        input.preBidMeetingDate || null,
-        input.preBidMeetingLink || null,
-        input.submissionDeadline,
-        input.bidOpeningTime || null,
-        validityDays,
-        userId,
-      ],
-    );
-
-    // Step 7: Audit log
-    logger.info({
-      tenderType: input.tenderType,
-      estimatedCost: input.estimatedCost,
-      calculatedSecurity: bidSecurityAmount,
-      autoCalculated: !input.bidSecurityAmount,
-      message: `Tender created with type-based validation`,
-    });
-
-    logger.info(`Tender created: ${id} (${tenderNumber})`);
-    return rows[0];
-  },
-
-  async findById(id: string): Promise<TenderRow | null> {
-    const { rows } = await pool.query<TenderRow>(
-      "SELECT * FROM tenders WHERE id = $1",
-      [id],
-    );
-    return rows[0] || null;
-  },
-
-  async findAll(
-    orgId: string,
-    role: string,
-    options?: { page?: number; limit?: number; status?: string },
-  ): Promise<{ rows: TenderRow[]; total: number }> {
-    const page = options?.page ?? 1;
-    const limit = options?.limit ?? 20;
-    const offset = (page - 1) * limit;
-
-    let baseQuery: string;
-    let countQuery: string;
-    let params: (string | number)[];
-
-    if (role === "buyer" || role === "admin") {
-      const statusClause = options?.status
-        ? `AND status = '${options.status.replace(/'/g, "''")}'`
-        : "";
-      baseQuery = `SELECT * FROM tenders WHERE buyer_org_id = $1 ${statusClause} ORDER BY created_at DESC LIMIT $2 OFFSET $3`;
-      countQuery = `SELECT COUNT(*) AS total FROM tenders WHERE buyer_org_id = $1 ${statusClause}`;
-      params = [orgId, limit, offset];
+    // Role-based filtering
+    if (user.role === 'super_admin') {
+      // See everything
+    } else if (['pe_admin'].includes(user.role)) {
+      query = query.where(eq(tenders.buyer_org_id, user.org_id!));
     } else {
-      const statusClause = options?.status
-        ? `AND t.status = '${options.status.replace(/'/g, "''")}'`
-        : "";
-      baseQuery = `SELECT t.* FROM tenders t
-        LEFT JOIN tender_vendor_invitations tvi ON t.id = tvi.tender_id AND tvi.vendor_org_id = $1
-        WHERE ((t.visibility = 'open' AND t.status != 'draft')
-           OR (t.visibility = 'limited' AND tvi.vendor_org_id IS NOT NULL)) ${statusClause}
-        ORDER BY t.created_at DESC LIMIT $2 OFFSET $3`;
-      countQuery = `SELECT COUNT(*) AS total FROM tenders t
-        LEFT JOIN tender_vendor_invitations tvi ON t.id = tvi.tender_id AND tvi.vendor_org_id = $1
-        WHERE ((t.visibility = 'open' AND t.status != 'draft')
-           OR (t.visibility = 'limited' AND tvi.vendor_org_id IS NOT NULL)) ${statusClause}`;
-      params = [orgId, limit, offset];
+      // tagged_only — see assigned tenders
+      const assignments = await db.select({ tender_id: tenderAssignments.tender_id })
+        .from(tenderAssignments)
+        .where(eq(tenderAssignments.user_id, user.id));
+      const tenderIds = assignments.map(a => a.tender_id);
+      if (tenderIds.length === 0) return { data: [], total: 0, page, pageSize, totalPages: 0 };
+      query = query.where(inArray(tenders.id, tenderIds));
     }
 
-    const [dataResult, countResult] = await Promise.all([
-      pool.query<TenderRow>(baseQuery, params),
-      pool.query<{ total: string }>(countQuery, [orgId]),
-    ]);
+    if (filters.status) {
+      query = query.where(eq(tenders.status, filters.status as any));
+    }
+    if (filters.search) {
+      query = query.where(ilike(tenders.title, `%${filters.search}%`));
+    }
+
+    const data = await query.orderBy(desc(tenders.created_at)).limit(pageSize).offset(offset);
+
+    const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(tenders);
 
     return {
-      rows: dataResult.rows,
-      total: parseInt(countResult.rows[0]?.total ?? "0", 10),
+      data: data as Tender[],
+      total: Number(count),
+      page,
+      pageSize,
+      totalPages: Math.ceil(Number(count) / pageSize),
     };
   },
 
-  async update(
-    id: string,
-    input: UpdateTenderInput,
-    orgId: string,
-  ): Promise<TenderRow> {
-    const tender = await this.findById(id);
-
-    if (!tender) {
-      throw Object.assign(new Error("Tender not found"), {
-        statusCode: 404,
-        code: "NOT_FOUND",
-      });
-    }
-
-    if (tender.buyer_org_id !== orgId) {
-      throw Object.assign(new Error("Not authorized"), {
-        statusCode: 403,
-        code: "FORBIDDEN",
-      });
-    }
-
-    if (tender.status !== "draft") {
-      throw Object.assign(new Error("Can only edit draft tenders"), {
-        statusCode: 409,
-        code: "CONFLICT",
-      });
-    }
-
-    const updates: string[] = [];
-    const values: unknown[] = [];
-    let paramIndex = 1;
-
-    const fieldMap: Record<string, string> = {
-      title: "title",
-      tenderType: "tender_type",
-      visibility: "visibility",
-      procurementType: "procurement_type",
-      currency: "currency",
-      priceBasis: "price_basis",
-      fundAllocation: "fund_allocation",
-      bidSecurityAmount: "bid_security_amount",
-      preBidMeetingDate: "pre_bid_meeting_date",
-      preBidMeetingLink: "pre_bid_meeting_link",
-      submissionDeadline: "submission_deadline",
-      bidOpeningTime: "bid_opening_time",
-      validityDays: "validity_days",
-    };
-
-    for (const [key, column] of Object.entries(fieldMap)) {
-      if (key in input) {
-        updates.push(`${column} = $${paramIndex}`);
-        values.push((input as Record<string, unknown>)[key]);
-        paramIndex++;
-      }
-    }
-
-    if (updates.length === 0) {
-      return tender;
-    }
-
-    updates.push(`updated_at = NOW()`);
-    values.push(id);
-
-    const { rows } = await pool.query<TenderRow>(
-      `UPDATE tenders SET ${updates.join(", ")} WHERE id = $${paramIndex} RETURNING *`,
-      values,
-    );
-
-    logger.info(`Tender updated: ${id}`);
-    return rows[0];
+  async getById(id: string) {
+    const [tender] = await db.select().from(tenders).where(eq(tenders.id, id)).limit(1);
+    return tender ?? null;
   },
 
-  async transitionStatus(
-    id: string,
-    newStatus: string,
-    orgId: string,
-  ): Promise<TenderRow> {
-    const tender = await this.findById(id);
+  async create(data: Omit<NewTender, 'tender_number'>, user: RequestUser) {
+    // tender_number is auto-generated by PostgreSQL trigger
+    const [tender] = await db.insert(tenders).values({
+      ...data,
+      tender_number: '', // Trigger will overwrite
+      buyer_org_id: user.org_id!,
+      created_by: user.id,
+    }).returning();
 
-    if (!tender) {
-      throw Object.assign(new Error("Tender not found"), {
-        statusCode: 404,
-        code: "NOT_FOUND",
-      });
-    }
-
-    if (tender.buyer_org_id !== orgId) {
-      throw Object.assign(new Error("Not authorized"), {
-        statusCode: 403,
-        code: "FORBIDDEN",
-      });
-    }
-
-    const allowed = VALID_TRANSITIONS[tender.status] || [];
-    if (!allowed.includes(newStatus)) {
-      throw Object.assign(
-        new Error(`Cannot transition from ${tender.status} to ${newStatus}`),
-        { statusCode: 409, code: "CONFLICT" },
-      );
-    }
-
-    const { rows } = await pool.query<TenderRow>(
-      `UPDATE tenders SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
-      [newStatus, id],
+    await auditService.log(
+      user.id, user.org_id, 'CREATE_TENDER', 'tender', tender.id,
+      `Created tender ${tender.tender_number}`,
     );
-
-    logger.info(
-      `Tender status changed: ${id} ${tender.status} -> ${newStatus}`,
-    );
-    return rows[0];
-  },
-
-  async publish(
-    id: string,
-    orgId: string,
-    invitedVendorIds?: string[],
-  ): Promise<TenderRow> {
-    const tender = await this.transitionStatus(id, "published", orgId);
-
-    if (
-      tender.visibility === "limited" &&
-      invitedVendorIds &&
-      invitedVendorIds.length > 0
-    ) {
-      const crypto = await import("crypto");
-
-      for (const vendorOrgId of invitedVendorIds) {
-        const token = crypto.randomBytes(32).toString("hex");
-        await pool.query(
-          `INSERT INTO tender_vendor_invitations (tender_id, vendor_org_id, invitation_token, status)
-           VALUES ($1, $2, $3, 'sent')
-           ON CONFLICT (tender_id, vendor_org_id) DO NOTHING`,
-          [id, vendorOrgId, token],
-        );
-      }
-
-      logger.info(
-        `Vendor invitations created: ${id} (${invitedVendorIds.length})`,
-      );
-    }
 
     return tender;
   },
 
-  async cancel(id: string, orgId: string): Promise<TenderRow> {
-    return this.transitionStatus(id, "cancelled", orgId);
+  async update(id: string, data: Partial<Tender>, user: RequestUser) {
+    const [updated] = await db.update(tenders)
+      .set({ ...data, updated_at: new Date() })
+      .where(eq(tenders.id, id))
+      .returning();
+
+    await auditService.log(
+      user.id, user.org_id, 'UPDATE_TENDER', 'tender', id,
+      `Updated tender ${updated.tender_number}`,
+    );
+
+    return updated;
   },
 
-  async delete(id: string, orgId: string): Promise<void> {
-    const tender = await this.findById(id);
+  async publish(id: string, user: RequestUser) {
+    const [updated] = await db.update(tenders)
+      .set({
+        status: 'published',
+        is_published: true,
+        published_at: new Date(),
+        updated_at: new Date(),
+      })
+      .where(eq(tenders.id, id))
+      .returning();
 
-    if (!tender) {
-      throw Object.assign(new Error("Tender not found"), {
-        statusCode: 404,
-        code: "NOT_FOUND",
-      });
+    // Send notifications to invited vendors
+    const invitations = await db.select().from(tenderInvitations)
+      .where(eq(tenderInvitations.tender_id, id));
+
+    for (const inv of invitations) {
+      await notificationService.sendTenderPublished(updated, inv.vendor_org_id);
     }
 
-    if (tender.buyer_org_id !== orgId) {
-      throw Object.assign(new Error("Not authorized"), {
-        statusCode: 403,
-        code: "FORBIDDEN",
-      });
-    }
+    await auditService.log(
+      user.id, user.org_id, 'PUBLISH_TENDER', 'tender', id,
+      `Published tender ${updated.tender_number} to ${invitations.length} vendors`,
+    );
 
-    if (tender.status !== "draft") {
-      throw Object.assign(new Error("Can only delete draft tenders"), {
-        statusCode: 409,
-        code: "CONFLICT",
-      });
-    }
+    return updated;
+  },
 
-    await pool.query("DELETE FROM tenders WHERE id = $1", [id]);
-    logger.info(`Tender deleted: ${id}`);
+  async close(id: string, user: RequestUser) {
+    const [updated] = await db.update(tenders)
+      .set({ status: 'closed', updated_at: new Date() })
+      .where(eq(tenders.id, id))
+      .returning();
+
+    await auditService.log(
+      user.id, user.org_id, 'CLOSE_TENDER', 'tender', id,
+      `Closed tender ${updated.tender_number}`,
+    );
+
+    return updated;
+  },
+
+  async forward(id: string, toStage: string, toUserId: string, notes: string, user: RequestUser) {
+    const [updated] = await db.update(tenders)
+      .set({
+        status: toStage as any,
+        current_stage: toStage,
+        forwarded_to: toUserId,
+        forwarded_at: new Date(),
+        updated_at: new Date(),
+      })
+      .where(eq(tenders.id, id))
+      .returning();
+
+    await auditService.log(
+      user.id, user.org_id, 'FORWARD_TENDER', 'tender', id,
+      `Forwarded tender to ${toStage}`, { notes },
+    );
+
+    return updated;
+  },
+
+  async delete(id: string, user: RequestUser) {
+    await db.delete(tenders).where(eq(tenders.id, id));
+    await auditService.log(
+      user.id, user.org_id, 'DELETE_TENDER', 'tender', id,
+      `Deleted tender`,
+    );
+  },
+
+  // ── Withhold ──────────────────────────────────────────────────
+
+  async withhold(id: string, reason: string, user: RequestUser) {
+    const [updated] = await db.update(tenders)
+      .set({
+        status: 'withheld',
+        withhold_reason: reason,
+        updated_at: new Date(),
+      })
+      .where(eq(tenders.id, id))
+      .returning();
+
+    await auditService.log(
+      user.id, user.org_id, 'WITHHOLD_TENDER', 'tender', id,
+      `Withheld tender ${updated.tender_number}`, { reason },
+    );
+
+    return updated;
+  },
+
+  // ── Line Items ────────────────────────────────────────────────
+
+  async getItems(tenderId: string) {
+    return db.select().from(tenderItems)
+      .where(eq(tenderItems.tender_id, tenderId))
+      .orderBy(tenderItems.item_number);
+  },
+
+  async addItems(tenderId: string, items: Array<{
+    item_number: number;
+    description: string;
+    unit: string;
+    quantity: number;
+    estimated_unit_price?: number;
+    specifications?: object;
+  }>, user: RequestUser) {
+    const inserted = await db.insert(tenderItems)
+      .values(items.map(item => ({
+        tender_id: tenderId,
+        item_number: item.item_number,
+        description: item.description,
+        unit: item.unit,
+        quantity: item.quantity,
+        estimated_unit_price: item.estimated_unit_price ?? null,
+        specifications: item.specifications ?? null,
+      })))
+      .returning();
+
+    await auditService.log(
+      user.id, user.org_id, 'ADD_TENDER_ITEMS', 'tender', tenderId,
+      `Added ${inserted.length} line items`,
+    );
+
+    return inserted;
+  },
+
+  // ── Invitations ───────────────────────────────────────────────
+
+  async getInvitations(tenderId: string) {
+    return db.select().from(tenderInvitations)
+      .where(eq(tenderInvitations.tender_id, tenderId))
+      .orderBy(tenderInvitations.invited_at);
+  },
+
+  async invite(tenderId: string, vendorOrgIds: string[], user: RequestUser) {
+    const inserted = await db.insert(tenderInvitations)
+      .values(vendorOrgIds.map(orgId => ({
+        tender_id: tenderId,
+        vendor_org_id: orgId,
+        invited_by: user.id,
+      })))
+      .returning();
+
+    await auditService.log(
+      user.id, user.org_id, 'INVITE_VENDORS', 'tender', tenderId,
+      `Invited ${inserted.length} vendor organisations`,
+    );
+
+    return inserted;
+  },
+
+  // ── Award Decision ────────────────────────────────────────────
+
+  async award(id: string, data: { bid_id: string; notes?: string }, user: RequestUser) {
+    const [updated] = await db.update(tenders)
+      .set({
+        status: 'awarded',
+        awarded_bid_id: data.bid_id,
+        awarded_at: new Date(),
+        updated_at: new Date(),
+      })
+      .where(eq(tenders.id, id))
+      .returning();
+
+    await auditService.log(
+      user.id, user.org_id, 'AWARD_TENDER', 'tender', id,
+      `Awarded tender ${updated.tender_number} to bid ${data.bid_id}`,
+      { bid_id: data.bid_id, notes: data.notes },
+    );
+
+    return updated;
   },
 };

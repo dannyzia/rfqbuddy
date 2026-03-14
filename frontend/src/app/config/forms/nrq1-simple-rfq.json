@@ -1,0 +1,161 @@
+{
+  "form_config": {
+    "id": "nrq1_simple_rfq",
+    "name": "Simple RFQ",
+    "description": "Lightweight request for quotation for quick non-government procurement up to BDT 20 Lac",
+    "category": "non_government",
+    "applicable_types": ["NRQ1"],
+    "version": "1.0",
+    "max_segments": 8,
+    "value_limit": { "max": 2000000, "currency": "BDT" },
+    "segments": [
+      {
+        "id": 1,
+        "key": "buyer_information",
+        "title": "Buyer Information",
+        "icon": "Building2",
+        "required": true,
+        "description": "Organization and contact details of the buyer",
+        "fields": [
+          { "id": "company_name", "label": "Company / Organization Name", "type": "text", "required": true, "placeholder": "Enter your company name" },
+          { "id": "company_address", "label": "Company Address", "type": "textarea", "required": true },
+          { "id": "contact_person", "label": "Contact Person", "type": "text", "required": true },
+          { "id": "contact_designation", "label": "Designation", "type": "text", "required": true },
+          { "id": "contact_phone", "label": "Phone Number", "type": "phone", "required": true, "validation": { "pattern": "^\\+?[0-9]{10,15}$" } },
+          { "id": "contact_email", "label": "Email Address", "type": "email", "required": true },
+          { "id": "company_tin", "label": "TIN Number", "type": "text", "required": false },
+          { "id": "company_trade_license", "label": "Trade License Number", "type": "text", "required": false }
+        ]
+      },
+      {
+        "id": 2,
+        "key": "rfq_details",
+        "title": "RFQ Details",
+        "icon": "FileText",
+        "required": true,
+        "description": "Basic information about what you want to procure",
+        "fields": [
+          { "id": "rfq_title", "label": "RFQ Title", "type": "text", "required": true, "placeholder": "e.g. Office Stationery Supply Q1-2026", "validation": { "min_length": 5, "max_length": 150 } },
+          { "id": "rfq_reference", "label": "Reference Number", "type": "text", "required": false, "placeholder": "Auto-generated if left blank" },
+          { "id": "rfq_category", "label": "Category", "type": "select", "required": true, "options": ["goods", "supplies", "equipment", "raw_materials", "it_hardware", "it_software", "furniture", "other"] },
+          { "id": "rfq_description", "label": "Description", "type": "textarea", "required": true, "placeholder": "Describe what you need in detail", "validation": { "min_length": 20 } },
+          { "id": "delivery_location", "label": "Delivery Location", "type": "text", "required": true },
+          { "id": "required_delivery_date", "label": "Required Delivery Date", "type": "date", "required": true },
+          { "id": "budget_estimate", "label": "Budget Estimate (BDT)", "type": "currency", "required": false, "validation": { "max": 2000000 }, "help_text": "Simple RFQ supports up to BDT 20 Lac" },
+          { "id": "priority_level", "label": "Priority", "type": "select", "required": false, "options": ["low", "normal", "high", "urgent"], "default": "normal" }
+        ]
+      },
+      {
+        "id": 3,
+        "key": "item_details",
+        "title": "Item Details",
+        "icon": "Package",
+        "required": true,
+        "description": "List of items or services you want quotes for",
+        "subforms": [
+          {
+            "id": "items",
+            "type": "repeatable",
+            "label": "Items",
+            "min_rows": 1,
+            "max_rows": 50,
+            "fields": [
+              { "id": "item_name", "label": "Item Name", "type": "text", "required": true },
+              { "id": "item_category", "label": "Category", "type": "select", "required": false, "options": ["general", "it", "furniture", "stationery", "electrical", "mechanical", "other"] },
+              { "id": "quantity", "label": "Quantity", "type": "number", "required": true, "validation": { "min": 1 } },
+              { "id": "unit", "label": "Unit", "type": "select", "required": true, "options": ["pcs", "kg", "litre", "meter", "set", "box", "ream", "pack", "lot"] },
+              { "id": "specification", "label": "Specification / Brand Preference", "type": "textarea", "required": false },
+              { "id": "item_attachment", "label": "Reference Image/Doc", "type": "file", "required": false, "accept": ".jpg,.png,.pdf" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "key": "commercial_terms",
+        "title": "Commercial Terms",
+        "icon": "DollarSign",
+        "required": true,
+        "description": "Payment and commercial conditions",
+        "fields": [
+          { "id": "payment_terms", "label": "Payment Terms", "type": "select", "required": true, "options": ["advance_100", "advance_50_delivery_50", "on_delivery", "credit_7_days", "credit_15_days", "credit_30_days", "credit_60_days"] },
+          { "id": "delivery_terms", "label": "Delivery Terms", "type": "select", "required": true, "options": ["ex_works", "delivered_to_site", "fob", "cif"] },
+          { "id": "warranty_required", "label": "Warranty Required", "type": "boolean", "required": false },
+          { "id": "warranty_period_months", "label": "Warranty Period (Months)", "type": "number", "required": false, "depends_on": "warranty_required" },
+          { "id": "vat_inclusive", "label": "Price Including VAT", "type": "boolean", "required": true, "default": true },
+          { "id": "tax_inclusive", "label": "Price Including Tax (AIT)", "type": "boolean", "required": true, "default": true },
+          { "id": "price_validity_days", "label": "Quotation Validity (Days)", "type": "number", "required": true, "default": 15, "validation": { "min": 7, "max": 90 } },
+          { "id": "additional_terms", "label": "Additional Terms & Conditions", "type": "textarea", "required": false }
+        ]
+      },
+      {
+        "id": 5,
+        "key": "attachments",
+        "title": "Attachments",
+        "icon": "Paperclip",
+        "required": false,
+        "description": "Supporting documents and reference files",
+        "fields": [
+          { "id": "specification_doc", "label": "Specification Document", "type": "file", "required": false, "accept": ".pdf,.doc,.docx,.xlsx" },
+          { "id": "reference_images", "label": "Reference Images", "type": "file", "required": false, "accept": ".jpg,.png,.gif", "multiple": true },
+          { "id": "terms_doc", "label": "Terms & Conditions Document", "type": "file", "required": false, "accept": ".pdf,.doc,.docx" },
+          { "id": "other_attachments", "label": "Other Attachments", "type": "file", "required": false, "multiple": true }
+        ]
+      },
+      {
+        "id": 6,
+        "key": "bidding_mode",
+        "title": "Bidding Mode",
+        "icon": "Settings",
+        "required": true,
+        "description": "Configure how vendors will submit their quotations",
+        "fields": [
+          { "id": "bidding_type", "label": "Bidding Type", "type": "select", "required": true, "options": ["sealed_quotation", "open_quotation", "live_bidding"], "default": "sealed_quotation" },
+          { "id": "quote_submission_deadline", "label": "Quotation Submission Deadline", "type": "datetime", "required": true },
+          { "id": "allow_partial_quotes", "label": "Allow Partial Quotations", "type": "boolean", "required": false, "default": false },
+          { "id": "require_all_items", "label": "Must Quote All Items", "type": "boolean", "required": false, "default": true },
+          { "id": "max_vendors", "label": "Maximum Vendors to Invite", "type": "number", "required": false },
+          { "id": "auto_extend_deadline", "label": "Auto-Extend if Less Than 3 Quotes", "type": "boolean", "required": false, "default": false },
+          { "id": "live_bidding_duration", "label": "Live Bidding Duration (Minutes)", "type": "number", "required": false, "depends_on": { "field": "bidding_type", "value": "live_bidding" } },
+          { "id": "show_competitor_rank", "label": "Show Rank to Vendors", "type": "boolean", "required": false, "depends_on": { "field": "bidding_type", "value": "live_bidding" } }
+        ]
+      },
+      {
+        "id": 7,
+        "key": "role_assignments",
+        "title": "Role Assignments",
+        "icon": "Users",
+        "required": false,
+        "description": "Assign team members to manage this RFQ",
+        "fields": [
+          { "id": "rfq_owner", "label": "RFQ Owner", "type": "user_select", "required": true, "default": "current_user" },
+          { "id": "approver", "label": "Approver", "type": "user_select", "required": false },
+          { "id": "evaluation_committee", "label": "Evaluation Committee Members", "type": "user_multiselect", "required": false },
+          { "id": "observers", "label": "Observers (View Only)", "type": "user_multiselect", "required": false },
+          { "id": "require_approval_before_publish", "label": "Require Approval Before Publishing", "type": "boolean", "required": false, "default": false }
+        ]
+      },
+      {
+        "id": 8,
+        "key": "review_publish",
+        "title": "Review & Publish",
+        "icon": "CheckCircle",
+        "required": true,
+        "description": "Review all details and publish the RFQ",
+        "fields": [
+          { "id": "internal_notes", "label": "Internal Notes", "type": "textarea", "required": false },
+          { "id": "publish_mode", "label": "Publish Mode", "type": "select", "required": true, "options": ["publish_now", "schedule_later", "save_as_draft"], "default": "save_as_draft" },
+          { "id": "scheduled_publish_date", "label": "Scheduled Publish Date", "type": "datetime", "required": false, "depends_on": { "field": "publish_mode", "value": "schedule_later" } },
+          { "id": "notify_vendors_on_publish", "label": "Notify Vendors on Publish", "type": "boolean", "required": false, "default": true },
+          { "id": "confirmation_checkbox", "label": "I confirm all information is accurate", "type": "boolean", "required": true }
+        ]
+      }
+    ],
+    "rules": {
+      "auto_apply": [
+        { "condition": { "field": "bidding_type", "equals": "live_bidding" }, "action": { "show_fields": ["live_bidding_duration", "show_competitor_rank"] } },
+        { "condition": { "field": "budget_estimate", "greater_than": 2000000 }, "action": { "show_warning": "Budget exceeds Simple RFQ limit of BDT 20 Lac. Consider using Detailed RFQ instead." } }
+      ]
+    }
+  }
+}

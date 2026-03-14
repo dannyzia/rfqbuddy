@@ -1,0 +1,393 @@
+{
+  "form_config": {
+    "id": "nrq3_rfp",
+    "name": "Request for Proposal (RFP)",
+    "description": "Full-featured Request for Proposal for complex procurements requiring detailed proposals, QCBS evaluation, and multi-stage assessment. Suitable for consulting, IT projects, and high-value non-government procurement.",
+    "category": "non_government",
+    "applicable_types": ["NRQ3"],
+    "version": "1.0",
+    "max_segments": 14,
+    "value_limit": { "max": null, "currency": "BDT", "note": "No upper limit for RFP" },
+    "segments": [
+      {
+        "id": 1,
+        "key": "rfp_overview",
+        "title": "RFP Overview",
+        "icon": "FileText",
+        "required": true,
+        "description": "General information about the Request for Proposal",
+        "fields": [
+          { "id": "rfp_title", "label": "RFP Title", "type": "text", "required": true, "placeholder": "e.g. ERP Implementation for ABC Corporation", "validation": { "min_length": 10, "max_length": 250 } },
+          { "id": "rfp_reference", "label": "RFP Reference Number", "type": "text", "required": false, "placeholder": "Auto-generated if blank" },
+          { "id": "rfp_type", "label": "RFP Type", "type": "select", "required": true, "options": ["consulting_services", "it_solutions", "engineering_services", "management_consulting", "audit_services", "research_study", "training_program", "design_services", "custom"] },
+          { "id": "procurement_nature", "label": "Nature of Procurement", "type": "select", "required": true, "options": ["services", "goods_and_services", "turnkey_solution", "outsourcing", "partnership", "framework_agreement"] },
+          { "id": "project_name", "label": "Project Name", "type": "text", "required": false },
+          { "id": "estimated_budget", "label": "Estimated Budget (BDT)", "type": "currency", "required": false },
+          { "id": "budget_disclosed", "label": "Disclose Budget to Proposers", "type": "boolean", "required": false, "default": false },
+          { "id": "funding_source", "label": "Funding Source", "type": "select", "required": false, "options": ["own_fund", "loan", "grant", "donor_funded", "mixed", "undisclosed"] },
+          { "id": "priority_level", "label": "Priority", "type": "select", "required": false, "options": ["standard", "high", "critical", "strategic"], "default": "standard" }
+        ]
+      },
+      {
+        "id": 2,
+        "key": "organization_info",
+        "title": "Organization Information",
+        "icon": "Building2",
+        "required": true,
+        "description": "Issuing organization details and background",
+        "fields": [
+          { "id": "org_name", "label": "Organization Name", "type": "text", "required": true },
+          { "id": "org_type", "label": "Organization Type", "type": "select", "required": true, "options": ["private_company", "public_company", "ngo", "ingo", "foundation", "cooperative", "association", "other"] },
+          { "id": "org_industry", "label": "Industry / Sector", "type": "select", "required": false, "options": ["banking_finance", "manufacturing", "telecom", "it_ites", "healthcare", "education", "energy", "construction", "fmcg", "textiles", "pharmaceuticals", "ngo_development", "other"] },
+          { "id": "org_address", "label": "Registered Address", "type": "textarea", "required": true },
+          { "id": "org_website", "label": "Website", "type": "url", "required": false },
+          { "id": "org_background", "label": "Organization Background", "type": "textarea", "required": false, "help_text": "Brief overview to help proposers understand your organization" },
+          { "id": "contact_name", "label": "Primary Contact Person", "type": "text", "required": true },
+          { "id": "contact_title", "label": "Contact Title/Designation", "type": "text", "required": true },
+          { "id": "contact_email", "label": "Contact Email", "type": "email", "required": true },
+          { "id": "contact_phone", "label": "Contact Phone", "type": "phone", "required": true },
+          { "id": "secondary_contact_name", "label": "Secondary Contact Person", "type": "text", "required": false },
+          { "id": "secondary_contact_email", "label": "Secondary Contact Email", "type": "email", "required": false }
+        ]
+      },
+      {
+        "id": 3,
+        "key": "background_objectives",
+        "title": "Background & Objectives",
+        "icon": "Target",
+        "required": true,
+        "description": "Project background, objectives, and expected outcomes",
+        "fields": [
+          { "id": "project_background", "label": "Project Background", "type": "textarea", "required": true, "placeholder": "Describe the context, current situation, and reasons for this procurement", "validation": { "min_length": 100 } },
+          { "id": "project_objectives", "label": "Project Objectives", "type": "textarea", "required": true, "placeholder": "List the key objectives this project aims to achieve" },
+          { "id": "expected_outcomes", "label": "Expected Outcomes / Deliverables", "type": "textarea", "required": true },
+          { "id": "success_criteria", "label": "Success Criteria", "type": "textarea", "required": false },
+          { "id": "current_systems", "label": "Current Systems / Processes", "type": "textarea", "required": false, "help_text": "Describe existing systems that will be replaced or integrated" },
+          { "id": "stakeholders", "label": "Key Stakeholders", "type": "textarea", "required": false },
+          { "id": "constraints", "label": "Known Constraints / Limitations", "type": "textarea", "required": false },
+          { "id": "assumptions", "label": "Assumptions", "type": "textarea", "required": false }
+        ]
+      },
+      {
+        "id": 4,
+        "key": "scope_of_work",
+        "title": "Scope of Work / TOR",
+        "icon": "Package",
+        "required": true,
+        "description": "Detailed Terms of Reference and scope definition",
+        "fields": [
+          { "id": "scope_overview", "label": "Scope Overview", "type": "textarea", "required": true, "validation": { "min_length": 50 } },
+          { "id": "in_scope", "label": "In Scope", "type": "textarea", "required": true },
+          { "id": "out_of_scope", "label": "Out of Scope", "type": "textarea", "required": false },
+          { "id": "methodology_preference", "label": "Preferred Methodology", "type": "textarea", "required": false, "help_text": "Any preferred approach or methodology (e.g., Agile, Waterfall, Hybrid)" },
+          { "id": "location_of_work", "label": "Location of Work", "type": "select", "required": true, "options": ["onsite", "offsite", "remote", "hybrid"] },
+          { "id": "work_location_details", "label": "Location Details", "type": "text", "required": false },
+          { "id": "project_duration_months", "label": "Expected Project Duration (Months)", "type": "number", "required": true },
+          { "id": "knowledge_transfer", "label": "Knowledge Transfer Required", "type": "boolean", "required": false, "default": true },
+          { "id": "documentation_required", "label": "Documentation Requirements", "type": "textarea", "required": false }
+        ],
+        "subforms": [
+          {
+            "id": "deliverables",
+            "type": "repeatable",
+            "label": "Key Deliverables",
+            "min_rows": 1,
+            "fields": [
+              { "id": "deliverable_name", "label": "Deliverable", "type": "text", "required": true },
+              { "id": "description", "label": "Description", "type": "textarea", "required": true },
+              { "id": "due_milestone", "label": "Due at Milestone", "type": "text", "required": false },
+              { "id": "acceptance_criteria", "label": "Acceptance Criteria", "type": "textarea", "required": false },
+              { "id": "format", "label": "Deliverable Format", "type": "text", "required": false }
+            ]
+          },
+          {
+            "id": "phases",
+            "type": "repeatable",
+            "label": "Project Phases",
+            "fields": [
+              { "id": "phase_name", "label": "Phase Name", "type": "text", "required": true },
+              { "id": "phase_description", "label": "Description", "type": "textarea", "required": false },
+              { "id": "duration_weeks", "label": "Duration (Weeks)", "type": "number", "required": false },
+              { "id": "key_activities", "label": "Key Activities", "type": "textarea", "required": false }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "key": "technical_requirements",
+        "title": "Technical Requirements",
+        "icon": "Settings",
+        "required": true,
+        "description": "Technical specifications and solution requirements",
+        "fields": [
+          { "id": "functional_requirements", "label": "Functional Requirements", "type": "textarea", "required": true },
+          { "id": "non_functional_requirements", "label": "Non-Functional Requirements", "type": "textarea", "required": false, "help_text": "Performance, scalability, security, availability requirements" },
+          { "id": "integration_requirements", "label": "Integration Requirements", "type": "textarea", "required": false },
+          { "id": "technology_preferences", "label": "Technology Preferences / Constraints", "type": "textarea", "required": false },
+          { "id": "security_requirements", "label": "Security & Compliance Requirements", "type": "textarea", "required": false },
+          { "id": "data_requirements", "label": "Data Migration / Management Requirements", "type": "textarea", "required": false },
+          { "id": "infrastructure_requirements", "label": "Infrastructure Requirements", "type": "textarea", "required": false },
+          { "id": "accessibility_requirements", "label": "Accessibility Requirements", "type": "textarea", "required": false },
+          { "id": "standards_compliance", "label": "Standards Compliance", "type": "multiselect", "required": false, "options": ["ISO_27001", "ISO_9001", "SOC2", "GDPR", "PCI_DSS", "HIPAA", "WCAG", "Company_Policy", "Other"] },
+          { "id": "sla_requirements", "label": "SLA Requirements", "type": "textarea", "required": false }
+        ]
+      },
+      {
+        "id": 6,
+        "key": "team_requirements",
+        "title": "Team & Resource Requirements",
+        "icon": "Users",
+        "required": false,
+        "description": "Required team composition and key personnel",
+        "fields": [
+          { "id": "team_overview", "label": "Team Structure Overview", "type": "textarea", "required": false },
+          { "id": "client_resources", "label": "Client-Side Resources Available", "type": "textarea", "required": false },
+          { "id": "co_location_required", "label": "Team Co-location Required", "type": "boolean", "required": false }
+        ],
+        "subforms": [
+          {
+            "id": "key_personnel",
+            "type": "repeatable",
+            "label": "Key Personnel Requirements",
+            "fields": [
+              { "id": "role", "label": "Role / Position", "type": "text", "required": true },
+              { "id": "qualification", "label": "Minimum Qualification", "type": "text", "required": true },
+              { "id": "experience_years", "label": "Min Experience (Years)", "type": "number", "required": true },
+              { "id": "specific_skills", "label": "Required Skills", "type": "textarea", "required": false },
+              { "id": "certifications", "label": "Required Certifications", "type": "text", "required": false },
+              { "id": "allocation_pct", "label": "Allocation (%)", "type": "number", "required": false },
+              { "id": "cv_required", "label": "CV Required", "type": "boolean", "required": false, "default": true }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "key": "eligibility_qualification",
+        "title": "Eligibility & Qualification",
+        "icon": "Shield",
+        "required": true,
+        "description": "Proposer eligibility and pre-qualification criteria",
+        "fields": [
+          { "id": "legal_status_required", "label": "Legal Registration Required", "type": "boolean", "required": true, "default": true },
+          { "id": "min_company_age_years", "label": "Minimum Company Age (Years)", "type": "number", "required": false },
+          { "id": "min_annual_revenue", "label": "Minimum Annual Revenue (BDT)", "type": "currency", "required": false },
+          { "id": "min_employees", "label": "Minimum Number of Employees", "type": "number", "required": false },
+          { "id": "similar_projects_count", "label": "Minimum Similar Projects Completed", "type": "number", "required": false },
+          { "id": "similar_project_min_value", "label": "Min Value of Similar Projects (BDT)", "type": "currency", "required": false },
+          { "id": "consortium_allowed", "label": "Consortium / JV Allowed", "type": "boolean", "required": false },
+          { "id": "subcontracting_allowed", "label": "Subcontracting Allowed", "type": "boolean", "required": false },
+          { "id": "subcontracting_max_pct", "label": "Max Subcontracting (%)", "type": "number", "required": false, "depends_on": "subcontracting_allowed" },
+          { "id": "blacklist_declaration", "label": "Blacklist Declaration Required", "type": "boolean", "required": true, "default": true },
+          { "id": "conflict_of_interest", "label": "Conflict of Interest Declaration", "type": "boolean", "required": true, "default": true },
+          { "id": "specific_certifications", "label": "Specific Certifications Required", "type": "textarea", "required": false },
+          { "id": "financial_statements_years", "label": "Audited Financial Statements (Years)", "type": "number", "required": false, "default": 3 },
+          { "id": "additional_eligibility", "label": "Additional Eligibility Criteria", "type": "textarea", "required": false }
+        ]
+      },
+      {
+        "id": 8,
+        "key": "proposal_format",
+        "title": "Proposal Format & Submission",
+        "icon": "ClipboardCheck",
+        "required": true,
+        "description": "How proposals should be structured and submitted",
+        "fields": [
+          { "id": "proposal_type", "label": "Proposal Type", "type": "select", "required": true, "options": ["technical_and_financial_separate", "combined_proposal", "expression_of_interest_then_full"], "default": "technical_and_financial_separate" },
+          { "id": "page_limit_technical", "label": "Technical Proposal Page Limit", "type": "number", "required": false },
+          { "id": "page_limit_financial", "label": "Financial Proposal Page Limit", "type": "number", "required": false },
+          { "id": "proposal_language", "label": "Proposal Language", "type": "select", "required": true, "options": ["english", "bangla", "both"], "default": "english" },
+          { "id": "proposal_currency", "label": "Proposal Currency", "type": "select", "required": true, "options": ["BDT", "USD", "EUR", "multiple"], "default": "BDT" },
+          { "id": "submission_method", "label": "Submission Method", "type": "select", "required": true, "options": ["online_portal", "email", "physical", "online_and_physical"], "default": "online_portal" },
+          { "id": "number_of_copies", "label": "Physical Copies Required", "type": "number", "required": false },
+          { "id": "proposal_security_required", "label": "Proposal Security / Bid Bond Required", "type": "boolean", "required": false },
+          { "id": "proposal_security_amount", "label": "Proposal Security Amount (BDT)", "type": "currency", "required": false, "depends_on": "proposal_security_required" },
+          { "id": "proposal_validity_days", "label": "Proposal Validity (Days)", "type": "number", "required": true, "default": 90, "validation": { "min": 30, "max": 365 } }
+        ],
+        "subforms": [
+          {
+            "id": "technical_sections",
+            "type": "repeatable",
+            "label": "Required Technical Proposal Sections",
+            "fields": [
+              { "id": "section_title", "label": "Section Title", "type": "text", "required": true },
+              { "id": "description", "label": "Description / Guidance", "type": "textarea", "required": false },
+              { "id": "mandatory", "label": "Mandatory", "type": "boolean", "required": true, "default": true }
+            ]
+          },
+          {
+            "id": "required_annexures",
+            "type": "repeatable",
+            "label": "Required Annexures / Attachments",
+            "fields": [
+              { "id": "annexure_name", "label": "Annexure Name", "type": "text", "required": true },
+              { "id": "description", "label": "Description", "type": "text", "required": false },
+              { "id": "mandatory", "label": "Mandatory", "type": "boolean", "required": true }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "key": "evaluation_methodology",
+        "title": "Evaluation Methodology",
+        "icon": "Scale",
+        "required": true,
+        "description": "Proposal evaluation method, criteria, and scoring system",
+        "fields": [
+          { "id": "evaluation_method", "label": "Evaluation Method", "type": "select", "required": true, "options": ["qcbs_quality_cost_based", "qbs_quality_based", "fbs_fixed_budget", "lcs_least_cost", "merit_point_system", "two_stage_evaluation"], "default": "qcbs_quality_cost_based" },
+          { "id": "technical_weight", "label": "Technical Weight (%)", "type": "number", "required": true, "default": 70, "validation": { "min": 0, "max": 100 } },
+          { "id": "financial_weight", "label": "Financial Weight (%)", "type": "number", "required": true, "default": 30, "validation": { "min": 0, "max": 100 } },
+          { "id": "min_technical_score", "label": "Minimum Technical Score to Open Financial (%)", "type": "number", "required": true, "default": 70 },
+          { "id": "interview_required", "label": "Presentation / Interview Required", "type": "boolean", "required": false },
+          { "id": "interview_weight", "label": "Interview Weight (%)", "type": "number", "required": false, "depends_on": "interview_required" },
+          { "id": "demo_required", "label": "Product Demo / POC Required", "type": "boolean", "required": false },
+          { "id": "site_visit_required", "label": "Proposer Site Visit Required", "type": "boolean", "required": false },
+          { "id": "reference_check", "label": "Reference Check Required", "type": "boolean", "required": false, "default": true },
+          { "id": "evaluation_committee_size", "label": "Evaluation Committee Size", "type": "number", "required": false, "default": 5 }
+        ],
+        "subforms": [
+          {
+            "id": "technical_criteria",
+            "type": "repeatable",
+            "label": "Technical Evaluation Criteria",
+            "min_rows": 1,
+            "fields": [
+              { "id": "criteria_category", "label": "Category", "type": "select", "required": true, "options": ["company_experience", "methodology", "team_qualifications", "technical_approach", "project_management", "innovation", "sustainability", "local_content", "value_added"] },
+              { "id": "criteria_name", "label": "Criteria Name", "type": "text", "required": true },
+              { "id": "criteria_description", "label": "Description", "type": "textarea", "required": false },
+              { "id": "max_score", "label": "Maximum Score", "type": "number", "required": true },
+              { "id": "pass_threshold", "label": "Minimum Pass Score", "type": "number", "required": false },
+              { "id": "is_mandatory_pass", "label": "Mandatory Pass/Fail", "type": "boolean", "required": false }
+            ]
+          },
+          {
+            "id": "financial_evaluation_rules",
+            "type": "repeatable",
+            "label": "Financial Evaluation Rules",
+            "fields": [
+              { "id": "rule_name", "label": "Rule", "type": "text", "required": true },
+              { "id": "description", "label": "Description", "type": "textarea", "required": false },
+              { "id": "formula", "label": "Scoring Formula", "type": "text", "required": false, "help_text": "e.g., Sf = 100 x Fm/F where Fm=lowest price, F=proposer price" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "key": "commercial_terms",
+        "title": "Commercial & Contract Terms",
+        "icon": "DollarSign",
+        "required": true,
+        "description": "Financial terms, payment schedule, and contract conditions",
+        "fields": [
+          { "id": "contract_type", "label": "Contract Type", "type": "select", "required": true, "options": ["fixed_price", "time_and_material", "cost_plus", "milestone_based", "retainer", "framework", "hybrid"] },
+          { "id": "payment_structure", "label": "Payment Structure", "type": "select", "required": true, "options": ["milestone_based", "monthly", "quarterly", "deliverable_based", "completion_based", "hybrid"] },
+          { "id": "advance_payment_pct", "label": "Advance Payment (%)", "type": "number", "required": false, "validation": { "min": 0, "max": 30 } },
+          { "id": "advance_guarantee_required", "label": "Advance Payment Guarantee Required", "type": "boolean", "required": false },
+          { "id": "performance_guarantee_pct", "label": "Performance Guarantee (%)", "type": "number", "required": false },
+          { "id": "retention_pct", "label": "Retention Money (%)", "type": "number", "required": false },
+          { "id": "penalty_clause", "label": "Penalty / LD Clause", "type": "textarea", "required": false },
+          { "id": "ip_ownership", "label": "IP Ownership", "type": "select", "required": false, "options": ["client_owns_all", "shared", "vendor_retains", "licensed_to_client"] },
+          { "id": "confidentiality_nda", "label": "NDA / Confidentiality Required", "type": "boolean", "required": false, "default": true },
+          { "id": "insurance_required", "label": "Professional Insurance Required", "type": "boolean", "required": false },
+          { "id": "dispute_resolution", "label": "Dispute Resolution", "type": "select", "required": true, "options": ["arbitration", "mediation", "court", "expert_determination"] },
+          { "id": "governing_law", "label": "Governing Law", "type": "text", "required": false, "default": "Laws of Bangladesh" },
+          { "id": "contract_duration_months", "label": "Contract Duration (Months)", "type": "number", "required": true },
+          { "id": "renewal_option", "label": "Contract Renewal Option", "type": "boolean", "required": false },
+          { "id": "termination_notice_days", "label": "Termination Notice Period (Days)", "type": "number", "required": false, "default": 30 }
+        ]
+      },
+      {
+        "id": 11,
+        "key": "timeline_schedule",
+        "title": "RFP Timeline & Schedule",
+        "icon": "Calendar",
+        "required": true,
+        "description": "Key dates and milestones for the RFP process",
+        "fields": [
+          { "id": "rfp_issue_date", "label": "RFP Issue Date", "type": "date", "required": true },
+          { "id": "pre_proposal_conference", "label": "Pre-Proposal Conference Date", "type": "datetime", "required": false },
+          { "id": "pre_proposal_venue", "label": "Pre-Proposal Conference Venue", "type": "text", "required": false },
+          { "id": "site_visit_date", "label": "Site Visit Date", "type": "datetime", "required": false },
+          { "id": "clarification_deadline", "label": "Last Date for Clarifications", "type": "datetime", "required": false },
+          { "id": "clarification_response_date", "label": "Clarification Response Date", "type": "date", "required": false },
+          { "id": "proposal_submission_deadline", "label": "Proposal Submission Deadline", "type": "datetime", "required": true },
+          { "id": "technical_opening_date", "label": "Technical Proposal Opening Date", "type": "datetime", "required": false },
+          { "id": "presentation_dates", "label": "Presentation / Interview Dates", "type": "text", "required": false },
+          { "id": "financial_opening_date", "label": "Financial Proposal Opening Date", "type": "datetime", "required": false },
+          { "id": "evaluation_completion_date", "label": "Expected Evaluation Completion", "type": "date", "required": false },
+          { "id": "negotiation_dates", "label": "Negotiation Period", "type": "text", "required": false },
+          { "id": "award_notification_date", "label": "Expected Award Notification", "type": "date", "required": false },
+          { "id": "contract_signing_date", "label": "Expected Contract Signing", "type": "date", "required": false },
+          { "id": "project_start_date", "label": "Expected Project Start Date", "type": "date", "required": true },
+          { "id": "project_end_date", "label": "Expected Project End Date", "type": "date", "required": true }
+        ]
+      },
+      {
+        "id": 12,
+        "key": "vendor_invitation",
+        "title": "Vendor Invitation",
+        "icon": "Users",
+        "required": true,
+        "description": "Vendor invitation strategy and communication",
+        "fields": [
+          { "id": "invitation_mode", "label": "Invitation Mode", "type": "select", "required": true, "options": ["open_rfp", "limited_rfp", "two_stage_eoi_then_rfp", "shortlisted_vendors", "invited_plus_open"], "default": "open_rfp" },
+          { "id": "min_proposals", "label": "Minimum Proposals Required", "type": "number", "required": true, "default": 3 },
+          { "id": "max_shortlist", "label": "Maximum Shortlist Size", "type": "number", "required": false },
+          { "id": "publish_on_website", "label": "Publish on Company Website", "type": "boolean", "required": false, "default": true },
+          { "id": "publish_on_newspaper", "label": "Publish in Newspaper", "type": "boolean", "required": false },
+          { "id": "newspaper_names", "label": "Newspaper Names", "type": "text", "required": false, "depends_on": "publish_on_newspaper" },
+          { "id": "vendor_briefing_session", "label": "Vendor Briefing Session", "type": "boolean", "required": false }
+        ]
+      },
+      {
+        "id": 13,
+        "key": "attachments_annexures",
+        "title": "Attachments & Annexures",
+        "icon": "Paperclip",
+        "required": false,
+        "description": "Supporting documents, templates, and reference materials",
+        "fields": [
+          { "id": "draft_contract", "label": "Draft Contract / Agreement", "type": "file", "required": false, "accept": ".pdf,.doc,.docx" },
+          { "id": "tor_document", "label": "Terms of Reference Document", "type": "file", "required": false, "accept": ".pdf,.doc,.docx" },
+          { "id": "technical_specs_doc", "label": "Technical Specifications Document", "type": "file", "required": false },
+          { "id": "financial_template", "label": "Financial Proposal Template", "type": "file", "required": false, "accept": ".xlsx,.xls,.pdf" },
+          { "id": "proposal_template", "label": "Proposal Submission Template", "type": "file", "required": false },
+          { "id": "nda_template", "label": "NDA Template", "type": "file", "required": false },
+          { "id": "evaluation_matrix", "label": "Evaluation Matrix Template", "type": "file", "required": false },
+          { "id": "site_maps", "label": "Site Maps / Floor Plans", "type": "file", "required": false, "multiple": true },
+          { "id": "reference_documents", "label": "Reference Documents", "type": "file", "required": false, "multiple": true },
+          { "id": "other_annexures", "label": "Other Annexures", "type": "file", "required": false, "multiple": true }
+        ]
+      },
+      {
+        "id": 14,
+        "key": "review_publish",
+        "title": "Review & Publish",
+        "icon": "Send",
+        "required": true,
+        "description": "Final review, approval workflow, and publishing",
+        "fields": [
+          { "id": "internal_review_notes", "label": "Internal Review Notes", "type": "textarea", "required": false },
+          { "id": "legal_review_completed", "label": "Legal Review Completed", "type": "boolean", "required": false },
+          { "id": "management_approval", "label": "Management Approval Obtained", "type": "boolean", "required": false },
+          { "id": "publish_mode", "label": "Publish Mode", "type": "select", "required": true, "options": ["publish_now", "schedule_publish", "submit_for_approval", "save_as_draft"], "default": "save_as_draft" },
+          { "id": "scheduled_publish_date", "label": "Scheduled Publish Date", "type": "datetime", "required": false, "depends_on": { "field": "publish_mode", "value": "schedule_publish" } },
+          { "id": "approver", "label": "Select Approver", "type": "user_select", "required": false, "depends_on": { "field": "publish_mode", "value": "submit_for_approval" } },
+          { "id": "notify_vendors", "label": "Notify Vendors on Publish", "type": "boolean", "required": false, "default": true },
+          { "id": "confirmation", "label": "I confirm all information is accurate, complete, and approved for release", "type": "boolean", "required": true }
+        ]
+      }
+    ],
+    "rules": {
+      "auto_apply": [
+        { "condition": { "field": "evaluation_method", "equals": "qbs_quality_based" }, "action": { "set_defaults": { "technical_weight": 100, "financial_weight": 0 }, "hide_fields": ["financial_weight"] } },
+        { "condition": { "field": "evaluation_method", "equals": "fbs_fixed_budget" }, "action": { "set_defaults": { "technical_weight": 100, "financial_weight": 0, "budget_disclosed": true } } },
+        { "condition": { "field": "proposal_type", "equals": "expression_of_interest_then_full" }, "action": { "show_info": "Two-stage process: EOI shortlisting followed by full RFP to shortlisted firms" } },
+        { "condition": { "field": "invitation_mode", "equals": "two_stage_eoi_then_rfp" }, "action": { "show_info": "An Expression of Interest phase will precede the full RFP" } }
+      ]
+    }
+  }
+}

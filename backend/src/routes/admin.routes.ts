@@ -1,61 +1,38 @@
-import { Router } from "express";
-import { taxController } from "../controllers/tax.controller";
-import { currencyController } from "../controllers/currency.controller";
-import { auditController } from "../controllers/audit.controller";
-import { authenticate, authorize } from "../middleware/auth.middleware";
+import { FastifyInstance } from 'fastify';
+import { adminStatsController } from '../controllers/adminStats.controller';
+import { adminUserController } from '../controllers/adminUser.controller';
+import { adminTenderController } from '../controllers/adminTender.controller';
+import { adminSettingsController } from '../controllers/adminSettings.controller';
+import { emailTemplateController } from '../controllers/emailTemplate.controller';
+import { requireAuth } from '../middleware/requireAuth';
+import { requireAdmin } from '../middleware/requireAdmin';
 
-const router = Router();
+export async function adminRoutes(app: FastifyInstance) {
+  const admin = [requireAuth, requireAdmin];
 
-// All admin routes require authentication
-router.use(authenticate);
+  // Dashboard stats
+  app.get('/stats', { preHandler: admin }, adminStatsController.getDashboardStats);
 
-// Tax Rules (Admin only)
-router.post("/tax-rules", authorize("admin"), taxController.createTaxRule);
-router.get("/tax-rules", authorize("admin", "buyer"), taxController.listTaxRules);
-router.get(
-  "/tax-rules/:taxRuleId",
-  authorize("admin", "buyer"),
-  taxController.getTaxRule,
-);
-router.put(
-  "/tax-rules/:taxRuleId",
-  authorize("admin"),
-  taxController.updateTaxRule,
-);
-router.delete(
-  "/tax-rules/:taxRuleId",
-  authorize("admin"),
-  taxController.deleteTaxRule,
-);
+  // User management
+  app.get('/users', { preHandler: admin }, adminUserController.list);
+  app.post('/users', { preHandler: admin }, adminUserController.create);
+  app.patch('/users/:id', { preHandler: admin }, adminUserController.update);
+  app.post('/users/:id/approve', { preHandler: admin }, adminUserController.approve);
+  app.post('/users/:id/reject', { preHandler: admin }, adminUserController.reject);
+  app.delete('/users/:id', { preHandler: admin }, adminUserController.deactivate);
 
-// Currency Rates
-router.post(
-  "/currency/refresh",
-  authorize("admin"),
-  currencyController.refreshRates,
-);
-router.get("/currency/rates", currencyController.listRates);
-router.get(
-  "/currency/rates/:baseCurrency/:targetCurrency",
-  currencyController.getRate,
-);
-router.get(
-  "/currency/rates/:baseCurrency/:targetCurrency/age",
-  currencyController.getRateAge,
-);
-router.post(
-  "/currency/rates",
-  authorize("admin"),
-  currencyController.upsertRate,
-);
-router.post("/currency/convert", currencyController.convertCurrency);
+  // Tender management
+  app.get('/tenders', { preHandler: admin }, adminTenderController.list);
+  app.delete('/tenders/:id', { preHandler: admin }, adminTenderController.remove);
 
-// Audit Logs (Admin only for full search)
-router.get("/audit/search", authorize("admin"), auditController.searchLogs);
-router.get("/audit/my-activity", auditController.getMyActivityLogs);
-router.get(
-  "/audit/timeline/:entityType/:entityId",
-  auditController.getEntityTimeline,
-);
+  // Platform settings
+  app.get('/settings', { preHandler: admin }, adminSettingsController.list);
+  app.put('/settings/:key', { preHandler: admin }, adminSettingsController.update);
 
-export { router as adminRoutes };
+  // Email templates
+  app.get('/email-templates', { preHandler: admin }, emailTemplateController.list);
+  app.get('/email-templates/:key', { preHandler: admin }, emailTemplateController.getByKey);
+  app.post('/email-templates', { preHandler: admin }, emailTemplateController.create);
+  app.patch('/email-templates/:key', { preHandler: admin }, emailTemplateController.update);
+  app.delete('/email-templates/:key', { preHandler: admin }, emailTemplateController.remove);
+}

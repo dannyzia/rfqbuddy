@@ -1,0 +1,8 @@
+/* Manrope — used by "Day Blue" theme */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+/* Inter — base fallback */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Mona Sans — used by "Cosmic Night" theme (GitHub's font, via cdnfonts) */
+@import url('https://fonts.cdnfonts.com/css/mona-sans');

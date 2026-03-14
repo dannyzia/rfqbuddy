@@ -1,179 +1,72 @@
-# ==============================
-# RFQ Buddy .gitignore
-# Comprehensive pattern file for TypeScript/Node.js/SvelteKit/PostgreSQL/Redis stack
-# ==============================
-
-# ==============================
-# 1. DEPENDENCIES
-# ==============================
-# Node.js package manager files and installed dependencies
+# Dependencies
 node_modules/
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-.pnpm-store/
 
-# ==============================
-# 2. BUILD & DIST OUTPUTS
-# ==============================
-# TypeScript and build artifacts
+# Build outputs
 dist/
 build/
 *.tsbuildinfo
-.svelte-kit/
 
-# ==============================
-# 3. ENVIRONMENT & SECRETS
-# ==============================
-# Local environment files (never commit secrets or credentials)
+# Environment and secrets (keep .env.example if you add one)
 .env
 .env.local
 .env.*.local
 .env.development
-.env.staging
-.env.test
-backend/.env.test
+.env.production
+!.env.example
 
-# ==============================
-# 4. LOGS
-# ==============================
-# Log files from npm, yarn, and application
-logs/
+# Logs and debug
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
-backend/logs/
 
-# ==============================
-# 5. TESTING & COVERAGE
-# ==============================
-# Test artifacts and code coverage reports
-coverage/
-.nyc_output/
-playwright-report/
-test-results/
-
-# ==============================
-# 6. IDE & EDITOR FILES
-# ==============================
-# Visual Studio Code
-.vscode/
-*.code-workspace
-.cursor/
-.windsurf/
-.kilocode/
-.kilocodemodes  # Kilo custom modes configuration
-
-# JetBrains IDEs
-.idea/
-
-# Vim & Emacs
+# OS and editor
+.DS_Store
+Thumbs.db
 *.swp
 *.swo
 *~
 
-# ==============================
-# 7. OS-SPECIFIC FILES
-# ==============================
-# macOS
-.DS_Store
-
-# Windows
-Thumbs.db
-
-# ==============================
-# 8. CACHE FILES
-# ==============================
-# ESLint and Prettier caches
-.eslintcache
-.prettiercache
-
-# ==============================
-# 9. DOCKER
-# ==============================
-# Docker build artifacts (if any generated locally)
-.docker-build/
-
-# ==============================
-# 10. PROJECT-SPECIFIC DIRECTORIES
-# ==============================
-# Resource and planning directories
-# Resources/ and plans/ are now tracked (uploaded to GitHub)
-
-# But exclude specific sensitive/large items from Resources
-Resources/CREDENTIALS.md
-Resources/*.zip
-Resources/docling-main/
-Resources/marker-master/
-Resources/markitdown-main/
-Resources/VendorlistBD/
-Instructions/
-scripts/
-rfq-platform/
+# IDE, tools, and project-local
+.cursor/
+.kilocode/
+.kilocodemodes/
 .rules/
 .serena/
+.vscode/
+.windsurf/
+.zed/
+docs/
+imports/
 skills/
 
-# Local server restart scripts
-restart-servers.bat
-restart-servers.ps1
+# Frontend archive / extracted
+RFQBUDDY-FRONTEND.zip
+RFQBUDDY-FRONTEND/
 
-# ==============================
-# 11. UTILITY & HELPER SCRIPTS
-# ==============================
-# One-off Python and JavaScript utility scripts used for setup/maintenance
-convert_docs.py
-convert_pdfs_to_md.py
-convert_policy_01.py
-convert_process_docs.py
-create-services.js
-extract_pdf_ocr.py
-extract_pdf_text.py
-fix-award.js
-fix-unused.js
+# Testing and coverage
+coverage/
+.nyc_output/
+*.lcov
 
-# ==============================
-# 12. TEST & DEBUG FILES
-# ==============================
-# Test utilities and debug scripts (non-test-suite files)
-**/check-*.js
-**/debug-*.js
-**/*_test.json
-**/*test.json
-debug-register.html
-test-db.js
-test-tender-selection.js
-test.ts
+# Optional / tooling
+.cache/
 
-# ==============================
-# 13. DOCUMENTATION (SELECTIVE)
-# ==============================
-# Ignore markdown files by default except essential project documentation
+# Python (e.g. .zed scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Markdown (keep README only)
 *.md
 !README.md
-!QUICKSTART.md
-!database/README.md
-!frontend/README.md
-!rules.md
-!rfq-buddy-rules.md
-!skills/
-!skills/*.md
-# Temporary debugging scripts  
-**/temp.js  
-**/temp.ts  
-backend/temp.js  
-backend/temp.ts  
-  
-# Windows null device file  
-nul  
-**/nul  
-  
-# Test output files  
-**/backend-test-results.txt  
-**/test-results.txt  
-  
-# Temporary setup scripts  
-fix-setup-script.js 
+
+# Misc
+*.tgz
+.npm
+.eslintcache
+.parcel-cache/
+.turbo/

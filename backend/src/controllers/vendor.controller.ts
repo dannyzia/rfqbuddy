@@ -1,185 +1,38 @@
-import { Request, Response, NextFunction } from "express";
-import { vendorService } from "../services/vendor.service";
-import type {
-  CreateVendorProfileInput,
-  UpdateVendorProfileInput,
-  VendorStatusInput,
-  UploadDocumentInput,
-  AddCategoryInput,
-} from "../schemas/vendor.schema";
+import { FastifyRequest, FastifyReply } from 'fastify';
+import { vendorService } from '../services/vendor.service';
 
 export const vendorController = {
-  async createProfile(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const input = req.body as CreateVendorProfileInput;
-      const profile = await vendorService.createProfile(req.user!.orgId, input);
-      res.status(201).json({ data: profile });
-    } catch (err) {
-      next(err);
-    }
+  async list(_req: FastifyRequest, reply: FastifyReply) {
+    return reply.send(await vendorService.list());
   },
 
-  async getMyProfile(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const profile = await vendorService.findProfileByOrgId(req.user!.orgId);
-
-      if (!profile) {
-        res.status(404).json({
-          error: { code: "NOT_FOUND", message: "Vendor profile not found" },
-        });
-        return;
-      }
-
-      const documents = await vendorService.findDocumentsByOrgId(
-        req.user!.orgId,
-      );
-      const categories = await vendorService.findCategoriesByOrgId(
-        req.user!.orgId,
-      );
-
-      res.status(200).json({ data: { ...profile, documents, categories } });
-    } catch (err) {
-      next(err);
-    }
+  async getProfile(req: FastifyRequest, reply: FastifyReply) {
+    const { orgId } = req.params as { orgId: string };
+    return reply.send(await vendorService.getProfile(orgId));
   },
 
-  async updateProfile(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const input = req.body as UpdateVendorProfileInput;
-      const profile = await vendorService.updateProfile(req.user!.orgId, input);
-      res.status(200).json({ data: profile });
-    } catch (err) {
-      next(err);
-    }
+  async submitEnlistment(req: FastifyRequest, reply: FastifyReply) {
+    return reply.code(201).send(await vendorService.submitEnlistment(req.body as any, req.user));
   },
 
-  async findAll(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const status = req.query.status as string | undefined;
-      const profiles = await vendorService.findAllProfiles(status);
-      res.status(200).json({ data: profiles });
-    } catch (err) {
-      next(err);
-    }
+  async reviewEnlistment(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const { approved } = req.body as any;
+    return reply.send(await vendorService.reviewEnlistment(id, approved, req.user));
   },
 
-  async findByOrgId(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const { orgId } = req.params;
-      const profile = await vendorService.findProfileByOrgId(orgId);
-
-      if (!profile) {
-        res.status(404).json({
-          error: { code: "NOT_FOUND", message: "Vendor profile not found" },
-        });
-        return;
-      }
-
-      const documents = await vendorService.findDocumentsByOrgId(orgId);
-      const categories = await vendorService.findCategoriesByOrgId(orgId);
-
-      res.status(200).json({ data: { ...profile, documents, categories } });
-    } catch (err) {
-      next(err);
-    }
+  async submitReview(req: FastifyRequest, reply: FastifyReply) {
+    return reply.code(201).send(await vendorService.submitReview(req.body as any, req.user));
   },
 
-  async changeStatus(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const { orgId } = req.params;
-      const input = req.body as VendorStatusInput;
-      const profile = await vendorService.changeStatus(
-        orgId,
-        input,
-        req.user!.id,
-      );
-      res.status(200).json({ data: profile });
-    } catch (err) {
-      next(err);
-    }
+  async getReviews(req: FastifyRequest, reply: FastifyReply) {
+    const { orgId } = req.params as { orgId: string };
+    return reply.send(await vendorService.getReviews(orgId));
   },
 
-  async uploadDocument(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const input = req.body as UploadDocumentInput;
-      const document = await vendorService.uploadDocument(
-        req.user!.orgId,
-        input,
-        req.user!.id,
-      );
-      res.status(201).json({ data: document });
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  async deleteDocument(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const { documentId } = req.params;
-      await vendorService.deleteDocument(req.user!.orgId, documentId);
-      res.status(200).json({ data: { message: "Document deleted" } });
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  async addCategory(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const input = req.body as AddCategoryInput;
-      const category = await vendorService.addCategory(req.user!.orgId, input);
-      res.status(201).json({ data: category });
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  async removeCategory(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const { categoryId } = req.params;
-      await vendorService.removeCategory(req.user!.orgId, categoryId);
-      res.status(200).json({ data: { message: "Category removed" } });
-    } catch (err) {
-      next(err);
-    }
+  async getSRM(req: FastifyRequest, reply: FastifyReply) {
+    const { orgId } = req.params as { orgId: string };
+    const profile = await vendorService.getProfile(orgId);
+    return reply.send({ srm_score: profile.vendorProfile?.srm_score ?? 0 });
   },
 };

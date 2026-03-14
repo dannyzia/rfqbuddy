@@ -1,148 +1,93 @@
-import express, { Application, Request, Response } from "express";
-import cors from "cors";
-import helmet from "helmet";
-import compression from "compression";
-import rateLimit from "express-rate-limit";
-import * as Sentry from "@sentry/node";
-import { sentryEnabled } from "./instrument";
-import { logger } from "./config/logger";
-import { config } from "./config";
-import { errorHandler } from "./middleware/error.middleware";
-import { requestLogger } from "./middleware/logger.middleware";
-import {
-  generalRateLimiter,
-  loginRateLimiter,
-} from "./middleware/rateLimit.middleware";
-import {
-  schedulerService,
-  initializeScheduledTasks,
-} from "./services/scheduler.service";
-import { apiRoutes } from "./routes";
+// Fastify entry point — RFQ Hub API server
+import 'dotenv/config';
 
-const app: Application = express();
+import Fastify from 'fastify';
+import helmet from '@fastify/helmet';
+import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
+import { env } from './config/env.js';
+import { registerRoutes } from './routes/index.js';
+import { setupSocket } from './config/socket.js';
+import { setupScheduledJobs, closeQueues } from './config/queue.js';
+import { closeDatabasePool, checkDatabaseHealth } from './config/database.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { globalRateLimit, authRateLimit } from './middleware/rateLimiter.js';
 
-// Trust proxy (important for rate limiting and getting real IP behind proxies)
-app.set("trust proxy", 1);
-
-// Security middleware
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],
-      },
+async function start() {
+  const app = Fastify({
+    logger: {
+      level: env.isDev ? 'debug' : 'info',
+      transport: env.isDev ? { target: 'pino-pretty' } : undefined,
     },
-    crossOriginEmbedderPolicy: false,
-  }),
-);
+  });
 
-// CORS configuration
-app.use(
-  cors({
-    origin: config.corsOrigins,
+  // ── Security ───────────────────────────────────────────────────
+
+  await app.register(helmet, {
+    contentSecurityPolicy: false,  // Handled by frontend
+  });
+
+  await app.register(cors, {
+    origin: env.FRONTEND_URL,
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-);
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  });
 
-// Rate limiting (skip in development when X-E2E header for E2E tests)
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later.",
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req) =>
-    config.nodeEnv === "development" && req.headers["x-e2e"] === "true",
-});
+  // Global rate limit: 100 req / 15 min per IP
+  await app.register(rateLimit, globalRateLimit);
 
-app.use("/api/", limiter);
+  // ── Error Handler ──────────────────────────────────────────────
 
-// Specific rate limiting for auth endpoints (skip when X-E2E header in development)
-app.use("/api/auth/login", (req, res, next) => {
-  if (config.nodeEnv === "development" && req.headers["x-e2e"] === "true") {
-    return next();
+  app.setErrorHandler(errorHandler);
+
+  // ── Routes ─────────────────────────────────────────────────────
+
+  await registerRoutes(app);
+
+  // Stricter rate limit on auth endpoints (10 req / 15 min)
+  // Applied via Fastify's encapsulated plugin system
+  app.register(async function authLimiter(instance) {
+    await instance.register(rateLimit, authRateLimit);
+  });
+
+  // ── Socket.io (realtime) ───────────────────────────────────────
+
+  setupSocket(app);
+
+  // ── Scheduled Jobs (BullMQ cron) ───────────────────────────────
+
+  await setupScheduledJobs();
+
+  // ── Start ──────────────────────────────────────────────────────
+
+  try {
+    await app.listen({ port: env.PORT, host: '0.0.0.0' });
+
+    const dbOk = await checkDatabaseHealth();
+    app.log.info(`Database: ${dbOk ? 'connected' : 'UNREACHABLE'}`);
+    app.log.info(`Server listening on http://0.0.0.0:${env.PORT}`);
+    app.log.info(`Environment: ${env.NODE_ENV}`);
+    app.log.info(`CORS origin: ${env.FRONTEND_URL}`);
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
   }
-  loginRateLimiter(req, res, next);
-});
-app.use("/api", generalRateLimiter);
 
-// Body parsing middleware
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+  // ── Graceful Shutdown ──────────────────────────────────────────
 
-// Compression middleware
-app.use(compression());
+  const shutdown = async (signal: string) => {
+    app.log.info(`${signal} received — shutting down gracefully`);
 
-// Request logging
-app.use(requestLogger);
+    await app.close();
+    await closeQueues();
+    await closeDatabasePool();
 
-// Health check endpoint
-app.get("/health", (_req: Request, res: Response) => {
-  res.status(200).json({
-    status: "ok",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: config.nodeEnv,
-  });
-});
+    process.exit(0);
+  };
 
-// API routes
-app.get("/api", (_req: Request, res: Response) => {
-  res.json({
-    message: "RFQ Tendering Platform API",
-    version: "1.0.0",
-    documentation: "/api/docs",
-  });
-});
-
-// Register API routes
-app.use('/api', apiRoutes);
-
-// 404 handler
-app.use((req: Request, res: Response) => {
-  res.status(404).json({
-    error: "Not Found",
-    message: `Cannot ${req.method} ${req.path}`,
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// Sentry error handler (must be before existing error handler, only when Sentry is active)
-if (sentryEnabled) {
-  Sentry.setupExpressErrorHandler(app);
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
-// Global error handler (must be last)
-app.use(errorHandler);
-
-// Initialize and start scheduled tasks
-if (process.env.NODE_ENV !== "test") {
-  initializeScheduledTasks();
-  schedulerService.startAll();
-}
-
-// Graceful shutdown handler
-process.on("SIGTERM", () => {
-  logger.info("SIGTERM signal received: closing HTTP server");
-  schedulerService.stopAll();
-  process.exit(0);
-});
-
-process.on("SIGINT", () => {
-  logger.info("SIGINT signal received: closing HTTP server");
-  schedulerService.stopAll();
-  process.exit(0);
-});
-
-// Unhandled rejection handler
-process.on("unhandledRejection", (reason: any) => {
-  logger.error("Unhandled Rejection:", reason);
-  process.exit(1);
-});
-
-export default app;
+start();

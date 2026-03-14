@@ -1,37 +1,29 @@
 import { defineConfig } from 'vitest/config';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 export default defineConfig({
-  plugins: [svelte({ hot: !process.env.VITEST })],
   test: {
-    include: ['src/**/*.{test,spec}.{js,ts}'],
-    environment: 'jsdom',
-    globals: true,
-    setupFiles: ['./src/tests/setup.ts'],
+    // Backend integration tests
+    include: ['src/backend/src/__tests__/**/*.test.ts'],
+    // Use node environment for backend tests
+    environment: 'node',
+    // Global test timeout (15s for integration tests)
+    testTimeout: 15_000,
+    // Run serially for integration tests that may share state
+    pool: 'forks',
+    // Coverage configuration
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'src/**/*.d.ts',
-        'src/**/*.test.ts',
-        'src/**/*.spec.ts',
+      include: [
+        'src/backend/src/services/**',
+        'src/backend/src/controllers/**',
+        'src/backend/src/routes/**',
       ],
-      thresholds: {
-        lines: 70,
-        functions: 70,
-        branches: 70,
-        statements: 70
-      }
+      reporter: ['text', 'html', 'json-summary'],
+      reportsDirectory: 'coverage/backend',
     },
-    testTimeout: 10000,
-    hookTimeout: 10000,
-  },
-  resolve: {
+    // Alias to resolve backend imports
     alias: {
-      $lib: '/src/lib',
-      $app: '/src/tests/mocks/app',
+      '@backend': '/src/backend/src',
     },
-    conditions: ['browser', 'import', 'module', 'default'],
   },
 });

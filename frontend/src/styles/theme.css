@@ -1,0 +1,467 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --input-background: oklch(0.205 0 0);
+  --switch-background: oklch(0.37 0 0);
+  --ring: oklch(0.439 0 0);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+  color-scheme: dark;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   THEME: Day Blue
+   Source: Figma dashboard design
+   Accent  → #369FFF  (sky blue)
+   Font    → Manrope (400 / 500 / 600 / 700 / 800)
+   Canvas  → pure white · stat-card tint #E6F3FF
+   Radius  → 1.25rem (matches Figma 20px card corners)
+   ══════════════════════════════════════════════════════════════════ */
+.theme-day {
+  /* Canvas */
+  --background:              #FFFFFF;
+  --foreground:              #303030;
+
+  /* Cards — use the 10 % blue tint from the Figma stat tiles */
+  --card:                    #F0F7FF;
+  --card-foreground:         #303030;
+
+  /* Popover / dropdown (stays white so text is readable) */
+  --popover:                 #FFFFFF;
+  --popover-foreground:      #303030;
+
+  /* Brand colour */
+  --primary:                 #369FFF;
+  --primary-foreground:      #FFFFFF;
+
+  /* Secondary = the light-blue highlight used on active items */
+  --secondary:               #E6F3FF;
+  --secondary-foreground:    #1565C0;
+
+  /* Muted — used for placeholder text containers and empty states */
+  --muted:                   #F5F8FF;
+  --muted-foreground:        #7E89AC;
+
+  /* Accent = same soft blue as secondary */
+  --accent:                  #E6F3FF;
+  --accent-foreground:       #369FFF;
+
+  /* Danger */
+  --destructive:             #D4183D;
+  --destructive-foreground:  #FFFFFF;
+
+  /* Borders — very soft blue tint (matches Figma 0.1-opacity overlay) */
+  --border:                  rgba(54, 159, 255, 0.14);
+  --input:                   transparent;
+  --input-background:        #F0F7FF;
+  --switch-background:       #B3D9FF;
+
+  /* Typography weights */
+  --font-weight-medium:      600;
+  --font-weight-normal:      400;
+
+  /* Focus ring */
+  --ring:                    #369FFF;
+
+  /* Chart palette — matches Figma course-card colours */
+  --chart-1:                 #369FFF;   /* blue    – French    */
+  --chart-2:                 #5AC53E;   /* green   – Italian   */
+  --chart-3:                 #FFD143;   /* yellow  – German    */
+  --chart-4:                 #FF993A;   /* orange  – Portugese */
+  --chart-5:                 #006ED3;   /* deep blue accent    */
+
+  /* Corner radius (20 px card corners from Figma) */
+  --radius:                  1.25rem;
+
+  /* Sidebar — pure white background, blue active indicator */
+  --sidebar:                 #FFFFFF;
+  --sidebar-foreground:      #303030;
+  --sidebar-primary:         #369FFF;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent:          #E6F3FF;
+  --sidebar-accent-foreground:  #369FFF;
+  --sidebar-border:          #EEF4FB;
+  --sidebar-ring:            #369FFF;
+
+  font-family: 'Manrope', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   THEME: Cosmic Night
+   Source: dashboard-styles-1.css (Figma layer CSS export)
+   Accent  → #CB3CFF  (Primary Colors / Color 1)
+   Font    → Mona Sans → Inter fallback
+   Canvas  → #081028  (Neutral Colors / 800)
+   Cards   → #0A1330  (Neutral Colors / 700)
+   Borders → #0B1739  (Neutral Colors / 600)
+   Muted text → #AEB9E1 (Neutral Colors / 400)
+   ══════════════════════════════════════════════════════════════════ */
+.theme-night {
+  /* Canvas */
+  --background:              #081028;
+  --foreground:              #FFFFFF;
+
+  /* Cards */
+  --card:                    #0A1330;
+  --card-foreground:         #FFFFFF;
+
+  /* Popover */
+  --popover:                 #0A1330;
+  --popover-foreground:      #FFFFFF;
+
+  /* Brand colour */
+  --primary:                 #CB3CFF;
+  --primary-foreground:      #FFFFFF;
+
+  /* Secondary = slightly lighter navy used for hover / inactive bg */
+  --secondary:               #0B1739;
+  --secondary-foreground:    #AEB9E1;
+
+  /* Muted */
+  --muted:                   #0B1739;
+  --muted-foreground:        #7E89AC;
+
+  /* Accent */
+  --accent:                  #0D1D4A;
+  --accent-foreground:       #D1DBF9;
+
+  /* Danger */
+  --destructive:             #FF4D6D;
+  --destructive-foreground:  #FFFFFF;
+
+  /* Borders — Neutral/600 with slight transparency for layering */
+  --border:                  rgba(11, 23, 57, 0.95);
+  --input:                   #0B1739;
+  --input-background:        #0A1330;
+  --switch-background:       #1A2550;
+
+  /* Typography weights */
+  --font-weight-medium:      500;
+  --font-weight-normal:      400;
+
+  /* Focus ring */
+  --ring:                    #CB3CFF;
+
+  /* Chart palette */
+  --chart-1:                 #CB3CFF;
+  --chart-2:                 #7B61FF;
+  --chart-3:                 #3CFFB4;
+  --chart-4:                 #FF6B6B;
+  --chart-5:                 #FFD93D;
+
+  /* Corner radius (7 px link items from CSS export) */
+  --radius:                  0.5rem;
+
+  /* Sidebar — same deep navy, violet active accent */
+  --sidebar:                 #081028;
+  --sidebar-foreground:      #AEB9E1;
+  --sidebar-primary:         #CB3CFF;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent:          #0A1330;
+  --sidebar-accent-foreground:  #FFFFFF;
+  --sidebar-border:          #0B1739;
+  --sidebar-ring:            #CB3CFF;
+
+  font-family: 'Mona Sans', 'Inter', system-ui, sans-serif;
+  color-scheme: dark;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   THEME: Edu Sky
+   Source: Dashboard-25-12001.tsx Figma component
+   Primary  → #369FFF  (sky blue)
+   Deep     → #006ED3  (stat numbers, dark accents)
+   Canvas   → #F3F7FF  (light blue-tinted page bg — key difference
+                        from Day Blue which uses pure #FFFFFF)
+   Cards    → #FFFFFF  (white cards float on the tinted canvas)
+   Muted fg → #8EA3B7  (blue-gray label text on stat tiles)
+   Font     → Manrope
+   Courses  → #369FFF · #FF993A · #8AC53E · #FFD143
+   ══════════════════════════════════════════════════════════════════ */
+.theme-sky {
+  /* Page canvas — light blue-tinted (from Figma bg behind cards) */
+  --background:              #F3F7FF;
+  --foreground:              #303030;
+
+  /* Cards sit white on the blue canvas — the contrast makes them pop */
+  --card:                    #FFFFFF;
+  --card-foreground:         #303030;
+
+  /* Popovers / dropdowns — pure white */
+  --popover:                 #FFFFFF;
+  --popover-foreground:      #303030;
+
+  /* Primary = sky blue (active nav, buttons, bar chart, links) */
+  --primary:                 #369FFF;
+  --primary-foreground:      #FFFFFF;
+
+  /* Secondary = the 10 % blue stat-tile tint */
+  --secondary:               rgba(54, 159, 255, 0.10);
+  --secondary-foreground:    #006ED3;
+
+  /* Muted = very pale blue for empty / inactive surfaces */
+  --muted:                   #EAF2FF;
+  --muted-foreground:        #8EA3B7;
+
+  /* Accent = same stat-tile tint */
+  --accent:                  rgba(54, 159, 255, 0.10);
+  --accent-foreground:       #369FFF;
+
+  /* Destructive */
+  --destructive:             #D4183D;
+  --destructive-foreground:  #FFFFFF;
+
+  /* Borders — hairline blue-gray separators */
+  --border:                  rgba(54, 159, 255, 0.18);
+  --input:                   transparent;
+  --input-background:        #FFFFFF;
+  --switch-background:       #B3D9FF;
+
+  /* Typography */
+  --font-weight-medium:      600;
+  --font-weight-normal:      400;
+
+  /* Focus ring */
+  --ring:                    #369FFF;
+
+  /* Chart colours — directly from the 4 course-card fills in Figma */
+  --chart-1:                 #369FFF;   /* French   – sky blue  */
+  --chart-2:                 #8AC53E;   /* Italian  – lime green*/
+  --chart-3:                 #FFD143;   /* German   – golden    */
+  --chart-4:                 #FF993A;   /* Portugese– orange    */
+  --chart-5:                 #006ED3;   /* deep blue accent     */
+
+  /* Radius — 20 px course cards → 1.25 rem, planning rows smaller */
+  --radius:                  1.25rem;
+
+  /* Sidebar — white panel, blue active indicator */
+  --sidebar:                 #FFFFFF;
+  --sidebar-foreground:      #303030;
+  --sidebar-primary:         #369FFF;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent:          rgba(54, 159, 255, 0.10);
+  --sidebar-accent-foreground:  #369FFF;
+  --sidebar-border:          #E8EFF8;
+  --sidebar-ring:            #369FFF;
+
+  font-family: 'Manrope', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+
+  /* Floating Overlay Scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
+  }
+
+  *:hover {
+    scrollbar-color: var(--muted-foreground) transparent;
+  }
+
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+    transition: background 0.3s ease;
+  }
+
+  *:hover::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+  }
+
+  .dark *:hover::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+  }
+}

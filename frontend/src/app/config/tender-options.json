@@ -1,0 +1,289 @@
+{
+  "tenderTypes": [
+    {
+      "value": "PG",
+      "label": "Procurement of Goods (PG1-PG9A)",
+      "category": "government"
+    },
+    {
+      "value": "PW",
+      "label": "Procurement of Works (PW1-PW3)",
+      "category": "government"
+    },
+    {
+      "value": "PPS",
+      "label": "Procurement of Services (PPS2-PPS6)",
+      "category": "government"
+    },
+    {
+      "value": "NRQ1",
+      "label": "Simple RFQ (NRQ1)",
+      "category": "non-government"
+    },
+    {
+      "value": "NRQ2",
+      "label": "Detailed RFQ (NRQ2)",
+      "category": "non-government"
+    },
+    {
+      "value": "NRQ3",
+      "label": "Request for Proposal - RFP (NRQ3)",
+      "category": "non-government"
+    }
+  ],
+  "tenderSubtypes": {
+    "PG": [
+      { "value": "PG1", "label": "PG1 - Open Tender Method (OTM)" },
+      { "value": "PG2", "label": "PG2 - Limited Tender Method (LTM)" },
+      { "value": "PG3", "label": "PG3 - Request for Quotation (RFQ)" },
+      { "value": "PG4", "label": "PG4 - Direct Procurement Method (DPM)" },
+      { "value": "PG5", "label": "PG5 - Two-Stage Tender Method" },
+      { "value": "PG6", "label": "PG6 - Framework Agreement" },
+      { "value": "PG7", "label": "PG7 - Electronic Reverse Auction" },
+      { "value": "PG8", "label": "PG8 - Design Contest" },
+      { "value": "PG9", "label": "PG9 - Negotiated Tender" },
+      { "value": "PG9A", "label": "PG9A - Emergency Procurement" }
+    ],
+    "PW": [
+      { "value": "PW1", "label": "PW1 - Open Tender for Works" },
+      { "value": "PW2", "label": "PW2 - Limited Tender for Works" },
+      { "value": "PW3", "label": "PW3 - Direct Award for Works" }
+    ],
+    "PPS": [
+      { "value": "PPS2", "label": "PPS2 - Quality and Cost-Based Selection (QCBS)" },
+      { "value": "PPS3", "label": "PPS3 - Quality-Based Selection (QBS)" },
+      { "value": "PPS4", "label": "PPS4 - Selection Based on Consultants' Qualifications (CQS)" },
+      { "value": "PPS5", "label": "PPS5 - Fixed Budget Selection (FBS)" },
+      { "value": "PPS6", "label": "PPS6 - Least-Cost Selection (LCS)" }
+    ]
+  },
+  "procurementMethods": [
+    { "value": "open", "label": "Open Tender" },
+    { "value": "limited", "label": "Limited Tender" },
+    { "value": "direct", "label": "Direct Procurement" },
+    { "value": "framework", "label": "Framework Agreement" },
+    { "value": "two-stage", "label": "Two-Stage Tender" },
+    { "value": "e-auction", "label": "Electronic Auction" }
+  ],
+  "categories": [
+    { "value": "it-hardware", "label": "IT Hardware & Equipment" },
+    { "value": "it-software", "label": "IT Software & Licenses" },
+    { "value": "it-services", "label": "IT Services & Consulting" },
+    { "value": "construction", "label": "Construction & Infrastructure" },
+    { "value": "civil-works", "label": "Civil Works" },
+    { "value": "electrical", "label": "Electrical Works" },
+    { "value": "mechanical", "label": "Mechanical Works" },
+    { "value": "consulting", "label": "Consulting Services" },
+    { "value": "professional", "label": "Professional Services" },
+    { "value": "office-supplies", "label": "Office Supplies & Stationery" },
+    { "value": "furniture", "label": "Furniture & Fixtures" },
+    { "value": "vehicles", "label": "Vehicles & Transportation" },
+    { "value": "healthcare", "label": "Healthcare & Medical Equipment" },
+    { "value": "security", "label": "Security Services" },
+    { "value": "cleaning", "label": "Cleaning & Maintenance" },
+    { "value": "catering", "label": "Catering & Food Services" },
+    { "value": "training", "label": "Training & Development" },
+    { "value": "other", "label": "Other" }
+  ],
+  "departments": [
+    { "value": "procurement", "label": "Procurement Department" },
+    { "value": "it", "label": "IT Department" },
+    { "value": "finance", "label": "Finance Department" },
+    { "value": "hr", "label": "Human Resources" },
+    { "value": "operations", "label": "Operations" },
+    { "value": "infrastructure", "label": "Infrastructure & Development" },
+    { "value": "health", "label": "Health & Welfare" },
+    { "value": "education", "label": "Education" },
+    { "value": "transport", "label": "Transport & Logistics" },
+    { "value": "admin", "label": "Administration" }
+  ],
+  "currencies": [
+    { "value": "USD", "label": "USD - US Dollar", "symbol": "$" },
+    { "value": "EUR", "label": "EUR - Euro", "symbol": "€" },
+    { "value": "GBP", "label": "GBP - British Pound", "symbol": "£" },
+    { "value": "INR", "label": "INR - Indian Rupee", "symbol": "₹" },
+    { "value": "AED", "label": "AED - UAE Dirham", "symbol": "د.إ" },
+    { "value": "SAR", "label": "SAR - Saudi Riyal", "symbol": "﷼" },
+    { "value": "SGD", "label": "SGD - Singapore Dollar", "symbol": "S$" },
+    { "value": "MYR", "label": "MYR - Malaysian Ringgit", "symbol": "RM" }
+  ],
+  "budgetRanges": [
+    { "value": "0-10k", "label": "Up to $10,000" },
+    { "value": "10k-50k", "label": "$10,000 - $50,000" },
+    { "value": "50k-100k", "label": "$50,000 - $100,000" },
+    { "value": "100k-500k", "label": "$100,000 - $500,000" },
+    { "value": "500k-1m", "label": "$500,000 - $1,000,000" },
+    { "value": "1m-5m", "label": "$1,000,000 - $5,000,000" },
+    { "value": "5m-10m", "label": "$5,000,000 - $10,000,000" },
+    { "value": "10m+", "label": "Above $10,000,000" }
+  ],
+  "evaluationCriteria": [
+    { "value": "technical", "label": "Technical Evaluation", "weight": 70 },
+    { "value": "financial", "label": "Financial Evaluation", "weight": 30 },
+    { "value": "experience", "label": "Company Experience", "weight": 20 },
+    { "value": "compliance", "label": "Compliance & Certification", "weight": 15 },
+    { "value": "quality", "label": "Quality Assurance", "weight": 10 },
+    { "value": "delivery", "label": "Delivery Timeline", "weight": 10 }
+  ],
+  "paymentTerms": [
+    { "value": "advance-30", "label": "30% Advance, 70% on Completion" },
+    { "value": "advance-20", "label": "20% Advance, 80% on Completion" },
+    { "value": "milestone", "label": "Milestone-based Payment" },
+    { "value": "net-30", "label": "Net 30 Days" },
+    { "value": "net-60", "label": "Net 60 Days" },
+    { "value": "net-90", "label": "Net 90 Days" },
+    { "value": "delivery", "label": "Payment on Delivery" },
+    { "value": "custom", "label": "Custom Payment Terms" }
+  ],
+  "deliveryTerms": [
+    { "value": "exw", "label": "EXW - Ex Works" },
+    { "value": "fob", "label": "FOB - Free on Board" },
+    { "value": "cif", "label": "CIF - Cost, Insurance & Freight" },
+    { "value": "ddp", "label": "DDP - Delivered Duty Paid" },
+    { "value": "dap", "label": "DAP - Delivered at Place" },
+    { "value": "custom", "label": "Custom Terms" }
+  ],
+  "contractTypes": [
+    { "value": "fixed-price", "label": "Fixed Price Contract" },
+    { "value": "time-material", "label": "Time & Material" },
+    { "value": "cost-plus", "label": "Cost Plus Contract" },
+    { "value": "framework", "label": "Framework Agreement" },
+    { "value": "retainer", "label": "Retainer Agreement" }
+  ],
+  "contractDurations": [
+    { "value": "3-months", "label": "3 Months" },
+    { "value": "6-months", "label": "6 Months" },
+    { "value": "1-year", "label": "1 Year" },
+    { "value": "2-years", "label": "2 Years" },
+    { "value": "3-years", "label": "3 Years" },
+    { "value": "5-years", "label": "5 Years" },
+    { "value": "custom", "label": "Custom Duration" }
+  ],
+  "documentTypes": [
+    { "value": "technical-specs", "label": "Technical Specifications" },
+    { "value": "boq", "label": "Bill of Quantities (BOQ)" },
+    { "value": "drawings", "label": "Technical Drawings" },
+    { "value": "terms", "label": "Terms & Conditions" },
+    { "value": "compliance", "label": "Compliance Documents" },
+    { "value": "samples", "label": "Sample Documents" },
+    { "value": "certificates", "label": "Required Certificates" },
+    { "value": "financial", "label": "Financial Documents" }
+  ],
+  "qualificationRequirements": [
+    { "value": "financial-turnover", "label": "Minimum Annual Turnover" },
+    { "value": "experience-years", "label": "Years in Business" },
+    { "value": "similar-projects", "label": "Similar Project Experience" },
+    { "value": "certifications", "label": "Required Certifications (ISO, etc.)" },
+    { "value": "technical-staff", "label": "Technical Staff Qualifications" },
+    { "value": "equipment", "label": "Equipment & Facilities" },
+    { "value": "references", "label": "Client References" },
+    { "value": "legal-status", "label": "Legal Registration Status" }
+  ],
+  "ticketCategories": {
+    "bug": [
+      { "value": "ui", "label": "User Interface" },
+      { "value": "performance", "label": "Performance" },
+      { "value": "database", "label": "Data/Database" },
+      { "value": "auth", "label": "Authentication" },
+      { "value": "reports", "label": "Reports/Analytics" },
+      { "value": "other", "label": "Other" }
+    ],
+    "feature": [
+      { "value": "workflow", "label": "Workflow Improvement" },
+      { "value": "module", "label": "New Module" },
+      { "value": "integration", "label": "Integration" },
+      { "value": "reporting", "label": "Reporting" },
+      { "value": "ux", "label": "User Experience" },
+      { "value": "other", "label": "Other" }
+    ],
+    "general": [
+      { "value": "account", "label": "Account/Profile" },
+      { "value": "billing", "label": "Billing/Subscription" },
+      { "value": "howto", "label": "How-to Question" },
+      { "value": "docs", "label": "Documentation" },
+      { "value": "training", "label": "Training" },
+      { "value": "other", "label": "Other" }
+    ]
+  },
+  "ticketPriorities": [
+    { "value": "low", "label": "Low", "sla": "5 business days" },
+    { "value": "medium", "label": "Medium", "sla": "2 business days" },
+    { "value": "high", "label": "High", "sla": "4 hours" },
+    { "value": "critical", "label": "Critical", "sla": "1 hour" }
+  ],
+  "ticketStatuses": [
+    { "value": "open", "label": "Open", "color": "blue" },
+    { "value": "in-progress", "label": "In Progress", "color": "purple" },
+    { "value": "resolved", "label": "Resolved", "color": "green" },
+    { "value": "closed", "label": "Closed", "color": "gray" }
+  ],
+  "assigneeTeams": [
+    { "value": "support-a", "label": "Support Team A" },
+    { "value": "support-b", "label": "Support Team B" },
+    { "value": "development", "label": "Development Team" },
+    { "value": "training", "label": "Training Team" },
+    { "value": "management", "label": "Management" }
+  ],
+  "userRoles": [
+    { "value": "admin", "label": "Administrator", "permissions": ["all"] },
+    { "value": "procurement-officer", "label": "Procurement Officer", "permissions": ["create", "edit", "approve"] },
+    { "value": "viewer", "label": "Viewer", "permissions": ["view"] }
+  ],
+  "vendorCategories": [
+    { "value": "goods", "label": "Goods Supplier" },
+    { "value": "works", "label": "Works Contractor" },
+    { "value": "services", "label": "Service Provider" },
+    { "value": "consultant", "label": "Consultant" }
+  ],
+  "catalogueCategories": [
+    { "value": "building-materials", "label": "Building Materials", "icon": "Warehouse", "status": "active" },
+    { "value": "it-equipment", "label": "IT Equipment", "icon": "Monitor", "status": "active" },
+    { "value": "office-supplies", "label": "Office Supplies", "icon": "Paperclip", "status": "active" },
+    { "value": "plumbing", "label": "Plumbing", "icon": "Droplets", "status": "active" },
+    { "value": "electrical", "label": "Electrical", "icon": "Zap", "status": "active" },
+    { "value": "finishing", "label": "Finishing", "icon": "PaintBucket", "status": "active" },
+    { "value": "furniture-fixtures", "label": "Furniture & Fixtures", "icon": "Armchair", "status": "active" },
+    { "value": "hvac", "label": "HVAC & Cooling", "icon": "Wind", "status": "active" },
+    { "value": "safety-equipment", "label": "Safety & PPE", "icon": "HardHat", "status": "active" },
+    { "value": "tools-machinery", "label": "Tools & Machinery", "icon": "Wrench", "status": "active" },
+    { "value": "vehicles-transport", "label": "Vehicles & Transport", "icon": "Truck", "status": "active" },
+    { "value": "medical-supplies", "label": "Medical Supplies", "icon": "Stethoscope", "status": "active" },
+    { "value": "lab-equipment", "label": "Laboratory Equipment", "icon": "FlaskConical", "status": "active" },
+    { "value": "cleaning-janitorial", "label": "Cleaning & Janitorial", "icon": "SprayCan", "status": "active" },
+    { "value": "food-catering", "label": "Food & Catering", "icon": "UtensilsCrossed", "status": "active" },
+    { "value": "textiles-uniforms", "label": "Textiles & Uniforms", "icon": "Shirt", "status": "active" },
+    { "value": "printing-stationery", "label": "Printing & Stationery", "icon": "Printer", "status": "active" },
+    { "value": "telecom-networking", "label": "Telecom & Networking", "icon": "Wifi", "status": "active" },
+    { "value": "security-surveillance", "label": "Security & Surveillance", "icon": "ShieldCheck", "status": "active" },
+    { "value": "agriculture", "label": "Agriculture & Farming", "icon": "Wheat", "status": "active" },
+    { "value": "water-sanitation", "label": "Water & Sanitation", "icon": "Droplets", "status": "active" },
+    { "value": "energy-solar", "label": "Energy & Solar", "icon": "Sun", "status": "active" },
+    { "value": "chemicals", "label": "Chemicals & Reagents", "icon": "FlaskConical", "status": "active" },
+    { "value": "packaging", "label": "Packaging Materials", "icon": "Package", "status": "active" },
+    { "value": "spare-parts", "label": "Spare Parts & Components", "icon": "Cog", "status": "active" },
+    { "value": "education-supplies", "label": "Education & Training Supplies", "icon": "GraduationCap", "status": "active" },
+    { "value": "signage-display", "label": "Signage & Display", "icon": "Presentation", "status": "active" },
+    { "value": "raw-materials", "label": "Raw Materials", "icon": "Layers", "status": "active" },
+    { "value": "other", "label": "Other / Uncategorised", "icon": "MoreHorizontal", "status": "active" }
+  ],
+  "companySize": [
+    { "value": "micro", "label": "Micro (1-10 employees)" },
+    { "value": "small", "label": "Small (11-50 employees)" },
+    { "value": "medium", "label": "Medium (51-250 employees)" },
+    { "value": "large", "label": "Large (251-1000 employees)" },
+    { "value": "enterprise", "label": "Enterprise (1000+ employees)" }
+  ],
+  "countries": [
+    { "value": "US", "label": "United States" },
+    { "value": "UK", "label": "United Kingdom" },
+    { "value": "CA", "label": "Canada" },
+    { "value": "AU", "label": "Australia" },
+    { "value": "IN", "label": "India" },
+    { "value": "AE", "label": "United Arab Emirates" },
+    { "value": "SA", "label": "Saudi Arabia" },
+    { "value": "SG", "label": "Singapore" },
+    { "value": "MY", "label": "Malaysia" },
+    { "value": "DE", "label": "Germany" },
+    { "value": "FR", "label": "France" }
+  ]
+}

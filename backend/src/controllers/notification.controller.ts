@@ -1,52 +1,25 @@
-import { Request, Response, NextFunction } from "express";
-import { notificationService } from "../services/notification.service";
+import { FastifyRequest, FastifyReply } from 'fastify';
+import { notificationService } from '../services/notification.service';
 
 export const notificationController = {
-  async getMyNotifications(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const limit = parseInt(req.query.limit as string) || 50;
-      const offset = parseInt(req.query.offset as string) || 0;
-      const notifications = await notificationService.findByRecipientId(
-        req.user!.id,
-        limit,
-        offset,
-      );
-      res.status(200).json({ data: notifications });
-    } catch (err) {
-      next(err);
-    }
+  async list(req: FastifyRequest, reply: FastifyReply) {
+    const { unread } = req.query as { unread?: string };
+    return reply.send(await notificationService.listForUser(req.user.id, unread === 'true'));
   },
 
-  async markAsRead(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const { notificationId } = req.params;
-      await notificationService.markAsDelivered(notificationId);
-      res
-        .status(200)
-        .json({ data: { message: "Notification marked as read" } });
-    } catch (err) {
-      next(err);
-    }
+  async markAsRead(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    await notificationService.markAsRead(id, req.user.id);
+    return reply.send({ success: true });
   },
 
-  async processPending(
-    _req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const processed = await notificationService.processPendingNotifications();
-      res.status(200).json({ data: { processed } });
-    } catch (err) {
-      next(err);
-    }
+  async markAllRead(req: FastifyRequest, reply: FastifyReply) {
+    await notificationService.markAllRead(req.user.id);
+    return reply.send({ success: true });
+  },
+
+  async getUnreadCount(req: FastifyRequest, reply: FastifyReply) {
+    const count = await notificationService.getUnreadCount(req.user.id);
+    return reply.send({ count });
   },
 };

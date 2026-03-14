@@ -1,0 +1,32 @@
+# docker-compose.prod.yml (backend only -- Railway/Fly.io preferred)
+#
+# All other services are managed:
+#   Frontend:  Vercel (auto-deploy from git)
+#   Database:  Managed PostgreSQL (Neon)
+#   Redis:     Managed (Upstash)
+#   Storage:   Cloudflare R2
+#   Email:     Resend SaaS
+
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports: ['3001:3001']
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - R2_ENDPOINT=${R2_ENDPOINT}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - FRONTEND_URL=${FRONTEND_URL}
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3001/api/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

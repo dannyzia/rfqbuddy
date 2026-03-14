@@ -1,0 +1,327 @@
+{
+  "form_config": {
+    "id": "govt_tender",
+    "name": "Government Tender",
+    "description": "Standard government procurement tender following Bangladesh PPA 2006 & PPR 2025 guidelines",
+    "category": "government",
+    "applicable_types": ["PG1", "PG2", "PG3", "PG4", "PG5A", "PG9A", "PW1", "PW3", "PPS2", "PPS3", "PPS6"],
+    "version": "1.0",
+    "max_segments": 14,
+    "segments": [
+      {
+        "id": 1,
+        "key": "tender_identification",
+        "title": "Tender Identification",
+        "icon": "FileText",
+        "required": true,
+        "description": "Core identification fields for the government tender",
+        "fields": [
+          { "id": "tender_title", "label": "Tender Title", "type": "text", "required": true, "placeholder": "Enter tender title (min 10 characters)", "validation": { "min_length": 10, "max_length": 200 } },
+          { "id": "tender_reference_no", "label": "Tender Reference Number", "type": "text", "required": true, "placeholder": "e.g. PG-2026-001", "validation": { "pattern": "[A-Z0-9-]+" } },
+          { "id": "tender_document_type", "label": "Tender Document Type", "type": "select", "required": true, "options_key": "tenderSubtypes", "depends_on": "procurement_category" },
+          { "id": "procurement_category", "label": "Procurement Category", "type": "select", "required": true, "options": ["goods", "works", "services"] },
+          { "id": "procurement_method", "label": "Procurement Method", "type": "select", "required": true, "options": ["RFQ", "OTM", "LTM", "TwoStage", "DirectProcurement"] },
+          { "id": "tender_mode", "label": "Tender Mode", "type": "select", "required": true, "options": ["simple_rfq", "detailed_rft", "live_tendering"] },
+          { "id": "estimated_cost", "label": "Estimated Cost (BDT)", "type": "currency", "required": true, "validation": { "min": 0 } },
+          { "id": "funding_source", "label": "Source of Funding", "type": "select", "required": true, "options": ["government_budget", "development_partner", "revenue_budget", "own_fund", "mixed"] },
+          { "id": "budget_year", "label": "Budget Year", "type": "select", "required": true, "options": ["2025-2026", "2026-2027", "2027-2028"] },
+          { "id": "project_name", "label": "Project Name", "type": "text", "required": false },
+          { "id": "lot_number", "label": "Lot/Package Number", "type": "text", "required": false }
+        ]
+      },
+      {
+        "id": 2,
+        "key": "procurement_details",
+        "title": "Procurement Entity Details",
+        "icon": "Building2",
+        "required": true,
+        "description": "Procuring entity and organization information",
+        "fields": [
+          { "id": "pe_name", "label": "Procuring Entity Name", "type": "text", "required": true },
+          { "id": "pe_district", "label": "District", "type": "select", "required": true, "options_key": "districts" },
+          { "id": "pe_division", "label": "Division", "type": "select", "required": true, "options_key": "divisions" },
+          { "id": "pe_ministry", "label": "Ministry/Division", "type": "select", "required": true, "options_key": "ministries" },
+          { "id": "pe_agency", "label": "Agency/Department", "type": "text", "required": true },
+          { "id": "pe_office_address", "label": "Office Address", "type": "textarea", "required": true },
+          { "id": "pe_contact_person", "label": "Contact Person Name", "type": "text", "required": true },
+          { "id": "pe_designation", "label": "Designation", "type": "text", "required": true },
+          { "id": "pe_phone", "label": "Phone Number", "type": "phone", "required": true },
+          { "id": "pe_email", "label": "Email Address", "type": "email", "required": true },
+          { "id": "approving_authority", "label": "Approving Authority", "type": "text", "required": true },
+          { "id": "head_of_pe", "label": "Head of PE", "type": "text", "required": true }
+        ]
+      },
+      {
+        "id": 3,
+        "key": "scope_boq",
+        "title": "Scope of Work / BOQ",
+        "icon": "Package",
+        "required": true,
+        "description": "Bill of quantities and scope definition",
+        "fields": [
+          { "id": "scope_description", "label": "Scope Description", "type": "textarea", "required": true },
+          { "id": "delivery_location", "label": "Delivery/Work Location", "type": "text", "required": true }
+        ],
+        "subforms": [
+          {
+            "id": "line_items",
+            "type": "repeatable",
+            "label": "BOQ Line Items",
+            "min_rows": 1,
+            "max_rows": 500,
+            "fields": [
+              { "id": "item_no", "label": "Item No.", "type": "number", "required": true },
+              { "id": "item_description", "label": "Description", "type": "textarea", "required": true },
+              { "id": "unit", "label": "Unit", "type": "select", "required": true, "options": ["nos", "kg", "meter", "sqm", "cum", "litre", "set", "lot", "lump_sum"] },
+              { "id": "quantity", "label": "Quantity", "type": "number", "required": true, "validation": { "min": 1 } },
+              { "id": "unit_rate_estimation", "label": "Estimated Unit Rate (BDT)", "type": "currency", "required": false },
+              { "id": "total_estimation", "label": "Estimated Total (BDT)", "type": "currency", "required": false, "computed": "quantity * unit_rate_estimation" },
+              { "id": "hs_code", "label": "HS Code", "type": "text", "required": false },
+              { "id": "country_of_origin", "label": "Country of Origin", "type": "text", "required": false }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "key": "technical_specifications",
+        "title": "Technical Specifications",
+        "icon": "Settings",
+        "required": true,
+        "description": "Technical requirements and specifications",
+        "fields": [
+          { "id": "general_technical_requirements", "label": "General Technical Requirements", "type": "textarea", "required": true },
+          { "id": "standards_applicable", "label": "Applicable Standards", "type": "multiselect", "required": false, "options": ["ISO", "BDS", "ASTM", "BS", "IEC", "AASHTO", "Other"] },
+          { "id": "inspection_requirements", "label": "Inspection Requirements", "type": "textarea", "required": false },
+          { "id": "testing_requirements", "label": "Testing Requirements", "type": "textarea", "required": false },
+          { "id": "warranty_period", "label": "Warranty Period (months)", "type": "number", "required": false },
+          { "id": "manufacturer_authorization", "label": "Manufacturer Authorization Required", "type": "boolean", "required": false },
+          { "id": "sample_submission", "label": "Sample Submission Required", "type": "boolean", "required": false }
+        ],
+        "subforms": [
+          {
+            "id": "spec_items",
+            "type": "repeatable",
+            "label": "Specification Details per Item",
+            "fields": [
+              { "id": "spec_item_ref", "label": "Item Reference", "type": "text", "required": true },
+              { "id": "parameter", "label": "Parameter", "type": "text", "required": true },
+              { "id": "required_value", "label": "Required Value/Range", "type": "text", "required": true },
+              { "id": "compliance_type", "label": "Compliance", "type": "select", "required": true, "options": ["mandatory", "preferred", "optional"] }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "key": "eligibility",
+        "title": "Eligibility Criteria",
+        "icon": "Shield",
+        "required": false,
+        "conditional": { "exclude_methods": ["RFQ", "DirectProcurement"] },
+        "description": "Bidder eligibility and participation requirements",
+        "fields": [
+          { "id": "nationality_restriction", "label": "Nationality Restriction", "type": "select", "required": false, "options": ["domestic_only", "international_allowed", "joint_venture_allowed"] },
+          { "id": "trade_license_required", "label": "Valid Trade License Required", "type": "boolean", "required": true, "default": true },
+          { "id": "tax_clearance_required", "label": "Tax Clearance Certificate Required", "type": "boolean", "required": true, "default": true },
+          { "id": "vat_registration_required", "label": "VAT Registration Required", "type": "boolean", "required": true, "default": true },
+          { "id": "enlistment_required", "label": "Enlistment with PE Required", "type": "boolean", "required": false },
+          { "id": "minimum_turnover", "label": "Minimum Annual Turnover (BDT)", "type": "currency", "required": false },
+          { "id": "minimum_experience_years", "label": "Minimum Experience (Years)", "type": "number", "required": false },
+          { "id": "blacklisting_declaration", "label": "Blacklisting Declaration Required", "type": "boolean", "required": true, "default": true },
+          { "id": "litigation_history", "label": "Litigation History Required", "type": "boolean", "required": false },
+          { "id": "joint_venture_allowed", "label": "Joint Venture Allowed", "type": "boolean", "required": false },
+          { "id": "jv_max_partners", "label": "Max JV Partners", "type": "number", "required": false, "depends_on": "joint_venture_allowed" },
+          { "id": "conflict_of_interest_declaration", "label": "Conflict of Interest Declaration", "type": "boolean", "required": true, "default": true }
+        ]
+      },
+      {
+        "id": 6,
+        "key": "qualification",
+        "title": "Qualification Requirements",
+        "icon": "FileCheck",
+        "required": false,
+        "conditional": { "exclude_methods": ["RFQ", "DirectProcurement"] },
+        "description": "Post-qualification or pre-qualification criteria",
+        "fields": [
+          { "id": "qualification_type", "label": "Qualification Type", "type": "select", "required": true, "options": ["post_qualification", "pre_qualification"] },
+          { "id": "similar_contract_value", "label": "Similar Contract Min Value (BDT)", "type": "currency", "required": false },
+          { "id": "similar_contract_count", "label": "Min Similar Contracts Completed", "type": "number", "required": false },
+          { "id": "financial_capacity_ratio", "label": "Financial Capacity Ratio", "type": "number", "required": false },
+          { "id": "key_personnel_required", "label": "Key Personnel Required", "type": "boolean", "required": false },
+          { "id": "equipment_requirement", "label": "Equipment/Facility Requirement", "type": "textarea", "required": false }
+        ]
+      },
+      {
+        "id": 7,
+        "key": "bid_submission",
+        "title": "Bid Submission Requirements",
+        "icon": "ClipboardCheck",
+        "required": true,
+        "description": "Submission format, fees, and security requirements",
+        "fields": [
+          { "id": "submission_method", "label": "Submission Method", "type": "select", "required": true, "options": ["online_only", "physical_only", "both"] },
+          { "id": "tender_document_fee", "label": "Tender Document Fee (BDT)", "type": "currency", "required": false },
+          { "id": "tender_security_amount", "label": "Tender Security Amount (BDT)", "type": "currency", "required": false },
+          { "id": "tender_security_type", "label": "Tender Security Type", "type": "multiselect", "required": false, "options": ["bank_guarantee", "demand_draft", "pay_order", "insurance_bond"] },
+          { "id": "tender_security_validity", "label": "Security Validity (Days beyond bid validity)", "type": "number", "required": false },
+          { "id": "bid_validity_days", "label": "Bid Validity Period (Days)", "type": "number", "required": true },
+          { "id": "envelope_system", "label": "Envelope System", "type": "select", "required": true, "options": ["single_envelope", "two_envelope", "two_stage"] },
+          { "id": "alternative_bids_allowed", "label": "Alternative Bids Allowed", "type": "boolean", "required": false, "default": false },
+          { "id": "partial_bids_allowed", "label": "Partial/Lot-wise Bids Allowed", "type": "boolean", "required": false }
+        ]
+      },
+      {
+        "id": 8,
+        "key": "evaluation",
+        "title": "Evaluation Methodology",
+        "icon": "Scale",
+        "required": true,
+        "description": "Bid evaluation criteria and methodology",
+        "fields": [
+          { "id": "evaluation_method", "label": "Evaluation Method", "type": "select", "required": true, "options": ["lowest_evaluated_cost", "quality_cost_based", "quality_based", "fixed_budget", "least_cost"] },
+          { "id": "technical_weight", "label": "Technical Weight (%)", "type": "number", "required": false, "validation": { "min": 0, "max": 100 } },
+          { "id": "financial_weight", "label": "Financial Weight (%)", "type": "number", "required": false, "validation": { "min": 0, "max": 100 } },
+          { "id": "minimum_technical_score", "label": "Minimum Technical Score (%)", "type": "number", "required": false },
+          { "id": "price_preference_domestic", "label": "Domestic Price Preference (%)", "type": "number", "required": false }
+        ],
+        "subforms": [
+          {
+            "id": "evaluation_criteria",
+            "type": "repeatable",
+            "label": "Evaluation Criteria",
+            "fields": [
+              { "id": "criteria_name", "label": "Criteria", "type": "text", "required": true },
+              { "id": "criteria_description", "label": "Description", "type": "textarea", "required": false },
+              { "id": "max_score", "label": "Max Score", "type": "number", "required": true },
+              { "id": "is_mandatory", "label": "Mandatory Pass", "type": "boolean", "required": false }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "key": "payment_contract",
+        "title": "Payment & Contract Terms",
+        "icon": "DollarSign",
+        "required": true,
+        "description": "Payment schedule, contract terms and conditions",
+        "fields": [
+          { "id": "payment_method", "label": "Payment Method", "type": "select", "required": true, "options": ["lump_sum", "milestone_based", "running_bill", "lc", "advance_partial"] },
+          { "id": "advance_payment_percentage", "label": "Advance Payment (%)", "type": "number", "required": false, "validation": { "min": 0, "max": 30 } },
+          { "id": "retention_money_percentage", "label": "Retention Money (%)", "type": "number", "required": false },
+          { "id": "performance_security_percentage", "label": "Performance Security (%)", "type": "number", "required": false },
+          { "id": "liquidated_damages_rate", "label": "Liquidated Damages Rate (%/week)", "type": "number", "required": false },
+          { "id": "max_ld_percentage", "label": "Max LD (%)", "type": "number", "required": false },
+          { "id": "contract_duration_days", "label": "Contract Duration (Days)", "type": "number", "required": true },
+          { "id": "defect_liability_period", "label": "Defect Liability Period (Days)", "type": "number", "required": false },
+          { "id": "price_adjustment_allowed", "label": "Price Adjustment Allowed", "type": "boolean", "required": false },
+          { "id": "dispute_resolution", "label": "Dispute Resolution Method", "type": "select", "required": true, "options": ["arbitration", "court", "mediation", "review_panel"] }
+        ]
+      },
+      {
+        "id": 10,
+        "key": "timeline",
+        "title": "Timeline & Milestones",
+        "icon": "Calendar",
+        "required": true,
+        "description": "Key dates and schedule for the tender process",
+        "fields": [
+          { "id": "invitation_date", "label": "Invitation for Tender Date", "type": "date", "required": true },
+          { "id": "document_sale_start", "label": "Document Sale Start Date", "type": "date", "required": true },
+          { "id": "document_sale_end", "label": "Document Sale End Date", "type": "date", "required": true },
+          { "id": "pre_bid_meeting_date", "label": "Pre-Bid Meeting Date", "type": "datetime", "required": false },
+          { "id": "pre_bid_meeting_venue", "label": "Pre-Bid Meeting Venue", "type": "text", "required": false },
+          { "id": "clarification_deadline", "label": "Clarification Request Deadline", "type": "datetime", "required": false },
+          { "id": "bid_submission_deadline", "label": "Bid Submission Deadline", "type": "datetime", "required": true },
+          { "id": "bid_opening_date", "label": "Bid Opening Date & Time", "type": "datetime", "required": true },
+          { "id": "bid_opening_venue", "label": "Bid Opening Venue", "type": "text", "required": true },
+          { "id": "evaluation_completion_date", "label": "Expected Evaluation Completion", "type": "date", "required": false },
+          { "id": "noa_date", "label": "Expected NOA Issue Date", "type": "date", "required": false },
+          { "id": "contract_signing_date", "label": "Expected Contract Signing Date", "type": "date", "required": false },
+          { "id": "delivery_completion_date", "label": "Delivery/Completion Date", "type": "date", "required": true }
+        ]
+      },
+      {
+        "id": 11,
+        "key": "tender_documents",
+        "title": "Tender Documents",
+        "icon": "FileText",
+        "required": true,
+        "description": "Document requirements and attachments",
+        "fields": [
+          { "id": "document_language", "label": "Document Language", "type": "select", "required": true, "options": ["bangla", "english", "both"] },
+          { "id": "currency", "label": "Bid Currency", "type": "select", "required": true, "options": ["BDT", "USD", "EUR", "multiple"] },
+          { "id": "newspaper_publication", "label": "Newspaper Publication Required", "type": "boolean", "required": false },
+          { "id": "newspaper_names", "label": "Newspaper Names", "type": "text", "required": false, "depends_on": "newspaper_publication" }
+        ],
+        "subforms": [
+          {
+            "id": "required_documents",
+            "type": "repeatable",
+            "label": "Required Documents from Bidder",
+            "fields": [
+              { "id": "doc_name", "label": "Document Name", "type": "text", "required": true },
+              { "id": "doc_type", "label": "Type", "type": "select", "required": true, "options": ["original", "certified_copy", "notarized", "self_attested"] },
+              { "id": "is_mandatory", "label": "Mandatory", "type": "boolean", "required": true }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "key": "vendor_selection",
+        "title": "Vendor Selection & Invitation",
+        "icon": "Users",
+        "required": true,
+        "description": "Vendor invitation mode and pre-selected vendors",
+        "fields": [
+          { "id": "invitation_mode", "label": "Invitation Mode", "type": "select", "required": true, "options": ["open", "limited", "direct_invite", "pre_qualified"] },
+          { "id": "minimum_bidders", "label": "Minimum Bidders Required", "type": "number", "required": true, "default": 3 },
+          { "id": "max_bidders", "label": "Maximum Bidders Allowed", "type": "number", "required": false }
+        ]
+      },
+      {
+        "id": 13,
+        "key": "live_bidding",
+        "title": "Live Bidding Configuration",
+        "icon": "Zap",
+        "required": false,
+        "conditional": { "field": "tender_mode", "value": "live_tendering" },
+        "description": "Real-time bidding session configuration",
+        "fields": [
+          { "id": "live_bidding_enabled", "label": "Enable Live Bidding", "type": "boolean", "required": false },
+          { "id": "bidding_start_time", "label": "Live Bidding Start Time", "type": "datetime", "required": false },
+          { "id": "bidding_duration_minutes", "label": "Duration (Minutes)", "type": "number", "required": false },
+          { "id": "auto_extension", "label": "Auto Extension on Last-Minute Bid", "type": "boolean", "required": false },
+          { "id": "extension_minutes", "label": "Extension Duration (Minutes)", "type": "number", "required": false },
+          { "id": "min_bid_decrement", "label": "Minimum Bid Decrement (BDT)", "type": "currency", "required": false },
+          { "id": "show_rank_to_bidders", "label": "Show Rank to Bidders", "type": "boolean", "required": false },
+          { "id": "show_lowest_bid", "label": "Show Lowest Bid Amount", "type": "boolean", "required": false }
+        ]
+      },
+      {
+        "id": 14,
+        "key": "preview_publish",
+        "title": "Preview & Publish",
+        "icon": "Send",
+        "required": true,
+        "description": "Review all sections and publish the tender",
+        "fields": [
+          { "id": "internal_notes", "label": "Internal Notes", "type": "textarea", "required": false },
+          { "id": "publish_immediately", "label": "Publish Immediately", "type": "boolean", "required": false, "default": false },
+          { "id": "scheduled_publish_date", "label": "Scheduled Publish Date", "type": "datetime", "required": false },
+          { "id": "notify_vendors", "label": "Notify Invited Vendors", "type": "boolean", "required": false, "default": true }
+        ]
+      }
+    ],
+    "rules": {
+      "auto_apply": [
+        { "condition": { "field": "procurement_method", "equals": "RFQ" }, "action": { "hide_segments": [5, 6], "set_defaults": { "envelope_system": "single_envelope", "bid_validity_days": 30 } } },
+        { "condition": { "field": "procurement_method", "equals": "DirectProcurement" }, "action": { "hide_segments": [5, 6, 13], "set_defaults": { "invitation_mode": "direct_invite", "minimum_bidders": 1 } } },
+        { "condition": { "field": "procurement_method", "equals": "TwoStage" }, "action": { "set_defaults": { "envelope_system": "two_stage" } } },
+        { "condition": { "field": "procurement_category", "equals": "services" }, "action": { "rename_segment": { "3": "Terms of Reference (TOR)" } } }
+      ]
+    }
+  }
+}

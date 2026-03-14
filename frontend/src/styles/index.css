@@ -1,0 +1,81 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+/* ─── Fallback Scrollbar Styles ──────────────────────────────────────
+   These apply to native browser scrollbars when NOT using ScrollArea.
+   Use <ScrollArea> component for true overlay scrollbars with zero gutter.
+   ──────────────────────────────────────────────────────────────────── */
+
+/* Firefox - Thin scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+*:hover,
+*:focus-within {
+  scrollbar-color: rgba(100, 100, 100, 0.3) transparent;
+}
+
+:is(.dark) *:hover,
+:is(.dark) *:focus-within {
+  scrollbar-color: rgba(200, 200, 200, 0.25) transparent;
+}
+
+/* WebKit/Blink - Minimal width scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+}
+
+*:hover::-webkit-scrollbar-thumb,
+*:focus-within::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+*:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+*:hover::-webkit-scrollbar-thumb:active {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+:is(.dark) *:hover::-webkit-scrollbar-thumb,
+:is(.dark) *:focus-within::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+:is(.dark) *:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+:is(.dark) *:hover::-webkit-scrollbar-thumb:active {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   NOTE: For TRUE overlay scrollbars with ZERO gutter space, use:
+   
+   import { ScrollArea } from './components/ui/scroll-area';
+   
+   <ScrollArea className="h-full">
+     Your content here
+   </ScrollArea>
+   
+   This uses Radix UI's ScrollArea which provides native overlay behavior.
+   ═══════════════════════════════════════════════════════════════════ */

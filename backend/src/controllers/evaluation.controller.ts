@@ -1,93 +1,43 @@
-import { Request, Response, NextFunction } from 'express';
+import { FastifyRequest, FastifyReply } from 'fastify';
 import { evaluationService } from '../services/evaluation.service';
-import type { CreateEvaluationInput, UnlockCommercialInput } from '../schemas/evaluation.schema';
 
 export const evaluationController = {
-  async openTechnicalEnvelopes(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { tenderId } = req.params;
-      const { bidIds } = req.body;
-      await evaluationService.openTechnicalEnvelopes(tenderId, req.user!.orgId, req.user!.id, bidIds);
-      res.status(200).json({ data: { message: 'Technical envelopes opened' } });
-    } catch (err) {
-      next(err);
-    }
+  async getCriteria(req: FastifyRequest, reply: FastifyReply) {
+    const { tenderId } = req.params as { tenderId: string };
+    return reply.send(await evaluationService.getCriteria(tenderId));
   },
 
-  async unlockCommercialEnvelopes(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { tenderId } = req.params;
-      const input = req.body as UnlockCommercialInput;
-      await evaluationService.unlockCommercialEnvelopes(tenderId, req.user!.orgId, req.user!.id, input.bidIds);
-      res.status(200).json({ data: { message: 'Commercial envelopes unlocked' } });
-    } catch (err) {
-      next(err);
-    }
+  async setCriteria(req: FastifyRequest, reply: FastifyReply) {
+    const { tenderId } = req.params as { tenderId: string };
+    const result = await evaluationService.setCriteria(tenderId, req.body as any, req.user);
+    return reply.send(result);
   },
 
-  async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const input = req.body as CreateEvaluationInput;
-      const evaluation = await evaluationService.create(input, req.user!.id, req.user!.orgId);
-      res.status(201).json({ data: evaluation });
-    } catch (err) {
-      next(err);
-    }
+  async submitScores(req: FastifyRequest, reply: FastifyReply) {
+    const { tenderId } = req.params as { tenderId: string };
+    const result = await evaluationService.submitScores(tenderId, req.body as any, req.user);
+    return reply.send(result);
   },
 
-  async calculateCommercialScores(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { tenderId } = req.params;
-      await evaluationService.calculateCommercialScores(tenderId);
-      res.status(200).json({ data: { message: 'Commercial scores calculated' } });
-    } catch (err) {
-      next(err);
-    }
+  async getResults(req: FastifyRequest, reply: FastifyReply) {
+    const { tenderId } = req.params as { tenderId: string };
+    return reply.send(await evaluationService.getResults(tenderId));
   },
 
-  async findByBidId(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { bidId } = req.params;
-      const evaluation = await evaluationService.findByBidId(bidId);
-
-      if (!evaluation) {
-        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Evaluation not found' } });
-        return;
-      }
-
-      res.status(200).json({ data: evaluation });
-    } catch (err) {
-      next(err);
-    }
+  async forward(req: FastifyRequest, reply: FastifyReply) {
+    const { tenderId } = req.params as { tenderId: string };
+    const { to_stage, to_user_id, notes } = req.body as any;
+    await evaluationService.forward(tenderId, to_stage, to_user_id, notes, req.user);
+    return reply.send({ success: true });
   },
 
-  async findByTenderId(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { tenderId } = req.params;
-      const evaluations = await evaluationService.findByTenderId(tenderId);
-      res.status(200).json({ data: evaluations });
-    } catch (err) {
-      next(err);
-    }
+  async getComparison(req: FastifyRequest, reply: FastifyReply) {
+    const { tenderId } = req.params as { tenderId: string };
+    return reply.send(await evaluationService.getComparison(tenderId));
   },
 
-  async getComparisonMatrix(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { tenderId } = req.params;
-      const matrix = await evaluationService.getComparisonMatrix(tenderId, req.user!.orgId);
-      res.status(200).json({ data: matrix });
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  async getRanking(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { tenderId } = req.params;
-      const ranking = await evaluationService.getRanking(tenderId, req.user!.orgId);
-      res.status(200).json({ data: ranking });
-    } catch (err) {
-      next(err);
-    }
+  async getRanking(req: FastifyRequest, reply: FastifyReply) {
+    const { tenderId } = req.params as { tenderId: string };
+    return reply.send(await evaluationService.getRanking(tenderId));
   },
 };
